@@ -1,0 +1,23 @@
+{
+  "name": "horus-agent-skills",
+  "owner": {
+    "name": "Horus Studio",
+    "url": "https://horus.com.uy"
+  },
+  "metadata": {
+    "description": "Agent skills from Horus Studio. .NET MAUI and mobile.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "coreclr-fit",
+      "source": "./skills/coreclr-fit",
+      "description": "Score whether .NET 11 with the CoreCLR runtime is a fit for a .NET MAUI project, on two axes: how much work the upgrade takes, and how much of the measured gain the app can actually capture.",
+      "version": "1.0.0",
+      "author": { "name": "Horus Studio", "url": "https://horus.com.uy" },
+      "homepage": "https://skills.horus.com.uy/coreclr-fit",
+      "license": "MIT",
+      "keywords": ["dotnet", "maui", "coreclr", "mono", "net11", "performance", "upgrade", "android"]
+    }
+  ]
+}
