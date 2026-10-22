@@ -1,6 +1,6 @@
 ---
 name: coreclr-fit
-description: Score whether .NET 11 with the CoreCLR runtime (which replaces Mono entirely on Android, iOS, Mac Catalyst and tvOS — from preview 6 there is no Mono option left) is a fit for a .NET MAUI project, on two axes: a 0–100 readiness score for how much work the migration takes, and an upside band (LOW / MEDIUM / HIGH) for how much of the measured gain this particular app can actually capture — because an app can be ready to migrate and have nothing to gain. Produces a report with both scores, blockers, per-dimension breakdown, a prioritized fix list with ready-to-paste MSBuild/XAML/C# changes, and honestly-labeled projected gains. Use this whenever someone asks whether their MAUI app can migrate to .NET 11 or CoreCLR, what will break when they leave Mono, asks about UseMonoRuntime, ReadyToRun or trimming on Android, the Android 32-bit drop, AOT crashes after upgrading, or wants an audit, checklist, score or estimate before upgrading a MAUI app from .NET 8, 9 or 10. Also covers "upgrade to .NET 11", "should we upgrade", "what does the .NET 11 upgrade cost us". Also use it when someone simply says "migrate this MAUI app to .NET 11" or "is CoreCLR worth it for us" — the assessment is what answers that, and the migration steps fall out of it. The skill is read-only: it analyses the repo and writes one report file, and never edits the project.
+description: 'Score whether .NET 11 with the CoreCLR runtime (which replaces Mono entirely on Android, iOS, Mac Catalyst and tvOS — from preview 6 there is no Mono option left) is a fit for a .NET MAUI project, on two axes: a 0–100 readiness score for how much work the migration takes, and an upside band (LOW / MEDIUM / HIGH) for how much of the measured gain this particular app can actually capture — because an app can be ready to migrate and have nothing to gain. Produces a report with both scores, blockers, per-dimension breakdown, a prioritized fix list with ready-to-paste MSBuild/XAML/C# changes, and honestly-labeled projected gains. Use this whenever someone asks whether their MAUI app can migrate to .NET 11 or CoreCLR, what will break when they leave Mono, asks about UseMonoRuntime, ReadyToRun or trimming on Android, the Android 32-bit drop, AOT crashes after upgrading, or wants an audit, checklist, score or estimate before upgrading a MAUI app from .NET 8, 9 or 10. Also covers "upgrade to .NET 11", "should we upgrade", "what does the .NET 11 upgrade cost us". Also use it when someone simply says "migrate this MAUI app to .NET 11" or "is CoreCLR worth it for us" — the assessment is what answers that, and the migration steps fall out of it. The skill is read-only: it analyses the repo and writes one report file, and never edits the project.'
 ---
 
 # CoreCLR fit for .NET MAUI
@@ -728,9 +728,9 @@ Setup: .NET 11 preview 5, Release arm64, two physical phones — a Xiaomi Mi 9T 
 
 **Two series, and the rows say which.** The published figures below come from the Xiaomi: one cold run
 plus five warm, averaged. The ceilings they point at — `5.0×` steady state, `9.9×` on JSON — come from a
-longer session on the moto, fifteen runs per launch with the ramp discarded and medians reported. Mono
-lands in the same place on both (~250 against 227 ms), which is what says the gap between them is the
-tier-1 ramp and not the hardware.
+longer session on the moto, fifteen runs per launch with the ramp discarded and medians reported. **Mono
+lands in the same place on both**, which is what says the distance between the two series is the tier-1
+ramp and not the hardware.
 
 **State the gap between this baseline and theirs, every time. It is not the same comparison.** Both
 sides of these measurements ran on **.NET 11 preview 5** — the last build where both runtimes existed,
