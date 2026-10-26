@@ -220,6 +220,8 @@ whether `x:Code` still fails to compile, and the MIBC tooling.
 These figures come from the `coreclr-fit v1` evidence set, measured on .NET 11 preview 5. They are
 re-measured when the runtime changes; the current set is always at `skills.horus.com.uy/coreclr-fit`.
 
+*Produced by Claude Code running Claude Opus, self-reported.*
+
 ## 10 · Badge
 
 ```markdown

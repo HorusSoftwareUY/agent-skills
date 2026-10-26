@@ -21,61 +21,50 @@ device, and from the Mono-vs-CoreCLR benchmarks behind it.
 ## Principles
 
 **Evaluate, don't grep the csproj.** The properties that decide readiness come from chains of
-`Directory.Build.props`, central package files and `Condition`s on configuration and TFM. The csproj
-text and the effective build routinely disagree — in the reference project the csproj *looked* like
-CoreCLR and the evaluated Release default was Mono. Ask MSBuild (step 1).
+`Directory.Build.props`, central package files and `Condition`s on configuration and TFM. The csproj text
+and the effective build routinely disagree — in the reference project the csproj *looked* like CoreCLR
+and the evaluated Release default was Mono. Ask MSBuild (step 1).
 
-**Every deduction points at a file and line.** A finding the user can't open is a finding they'll
-argue with.
+**Every deduction points at a file and line.** A finding the user can't open is a finding they'll argue
+with.
 
-**Candidates are not findings.** Searches can't resolve intent. A `.Select()` in a view model building
-a list is the Upside signal; the same call in startup configuration or a test helper is not, and an
-`.aar` in the tree costs nothing if it belongs to a sample project. Open the file before you score it.
+**Candidates are not findings.** Searches can't resolve intent. A `.Select()` in a view model building a
+list is the Upside signal; the same call in startup configuration or a test helper is not, and an `.aar`
+in the tree costs nothing if it belongs to a sample project. Open the file before you score it.
 
-**Projections are not measurements.** The numbers in this skill come from named devices with a
-documented protocol. They say what *kind* of gain to expect on what *kind* of code — nothing about the
-user's app until they measure. Label every number with its confidence, and keep runtime gains, build-
-config gains and app-code gains on separate lines: the last kind is available without upgrading, and adding
-them into one "CoreCLR gives you −70%" would be false.
+**Projections are not measurements.** The numbers in this skill come from named devices with a documented
+protocol. They say what *kind* of gain to expect on what *kind* of code — nothing about the user's app
+until they measure. Label every number with its confidence, and keep runtime gains, build-config gains and
+app-code gains on separate lines: the last kind is available without upgrading, and adding them into one
+"CoreCLR gives you −70%" would be false.
 
 **Blocked is not stuck.** A gate means *you cannot move to .NET 11 today* — nothing more. .NET 10 is LTS
-and supported until **14 November 2028**, so not upgrading is a decision with three years of runway, not
-an emergency. Say what the gate is, and say that. (Mono itself is gone: from .NET 11 preview 6 CoreCLR is
+and supported until **14 November 2028**, so not upgrading is a decision with real runway rather than an
+emergency. **Say the date, and work the remaining time out from today's** — never carry a fixed
+"N years", which is wrong the moment this file is a year old. Say what the gate is, and say that. (Mono itself is gone: from .NET 11 preview 6 CoreCLR is
 the only runtime on Android, iOS, Mac Catalyst and tvOS, and `UseMonoRuntime` no longer exists, so "stay
 on Mono" means "stay on .NET 10", which is a version decision rather than a build flag.)
 
-**Read, report, change nothing.** This skill analyses a repository and writes a report about it. It does
-not edit the project: no source file, no `.csproj`, no `Directory.Build.props`, no package reference, no
-TFM. **The only file it creates is `coreclr-fit.md` at the solution root.**
+**Read, report, change nothing.** This skill analyses a repository and writes a report about it. It edits
+no source file, no `.csproj`, no `Directory.Build.props`, no package reference, no TFM. **The only file it
+creates is `coreclr-fit.md` at the solution root.** Its commands are read-only by construction —
+`-getProperty` evaluates without compiling, `--list-sdks` reports, `unzip -l` lists — and evaluating may
+populate `obj/` the way any restore does, which is the whole of its footprint. The snippets in this file
+are content for the reader, never commands to execute.
 
-The commands it runs are read-only by construction: `dotnet msbuild -getProperty` evaluates without
-compiling, `dotnet --version` and `--list-sdks` report, `unzip -l` lists an archive without extracting
-it. Evaluating may populate `obj/` the way any restore does, and that is the whole of its footprint.
-Nothing in this skill builds, publishes or deploys — the snippets that do are content for the reader,
-never commands to execute.
+That holds even when the request sounds like an instruction to act: *"migrate this app to .NET 11"* is a
+trigger because the assessment is what answers it.
 
-That holds even when the request sounds like an instruction to act. *"Migrate this app to .NET 11"* is a
-trigger for this skill because the assessment is what answers it, not because the skill performs the
-migration: it hands back the findings, the fix list and the steps, and the owner decides.
+**This is about sequence, not refusal.** If they read the report and then ask for the fixes to be applied,
+apply them — declining would strand them halfway. The order is what matters: **1.** run the analysis,
+touching nothing · **2.** hand over the report, finished and unedited · **3.** only then, on an explicit
+request, agree what is in scope and make the changes. Step 2 is the one that cannot be skipped, because a
+report that quietly rewrote the repo while producing itself describes a project that no longer exists.
 
-**This is about sequence, not refusal.** If they read the report and then ask for the fixes to be
-applied, apply them — that is a reasonable next step and declining it would strand them halfway. The
-order is what matters:
-
-1. Run the analysis, touching nothing.
-2. Hand over the report, finished and unedited.
-3. Only then, on an explicit request, agree which items are in scope and make the changes.
-
-Step 2 is the one that cannot be skipped. A report that quietly rewrote the repo while producing itself
-describes a project that no longer exists, so nobody can check it against what they have — and the fix
-list exists precisely to be read and argued with before anybody edits anything. Applying it is ordinary
-work once they have seen it and said yes.
-
-**Ready is not worth it.** Scoring whether a project *can* move does not answer whether it *should*, and
-those are different decisions usually made by different people. Two of the first three projects scored
-this way came out inverted: one was ready and had nothing to gain, the other had plenty to gain and was
-not ready. Report both axes every time, and report a low Upside as the finding it is, not as a failure of
-the analysis — *"ready, and it will not pay you"* is the sentence nobody else will write for them.
+**Ready is not worth it.** Whether a project *can* move does not answer whether it *should*, and those are
+different decisions usually made by different people. Two of the first three projects scored this way came
+out inverted. Report both axes every time, and report a low Upside as the finding it is — *"ready, and it
+will not pay you"* is the sentence nobody else will write for them.
 
 ## Workflow
 
@@ -251,63 +240,48 @@ all.
 Three dimensions, 100 points (`50 · 20 · 30`), plus gates. Two whole categories that earlier versions scored — reflection and startup — are now reported and never scored; see below. Deduct from each dimension's maximum, never below 0. Show the arithmetic so the user can recompute it. When a rule
 clearly doesn't fit (a `GetTypes()` behind `#if DEBUG`), skip it and say why — judgment beats the table.
 
-**Terminology — say "upgrade", not "migration".** Moving from .NET 9 or 10 to .NET 11 is an *upgrade*:
-the same stack, a version forward. In this ecosystem "migration" already means Xamarin.Forms → MAUI or
-.NET Framework → .NET Core — moving between different things — and borrowing that word makes a week of
-work sound like a quarter of it, which costs the reader a decision they would otherwise say yes to.
-
-Three uses of "migration" are deliberate and not drift: **Xamarin.Forms → MAUI** in step 0, where the
-contrast is the point; **Newtonsoft → System.Text.Json** or any move between two libraries; and the
-`description`, which lists "migrate" among its triggers because that field is what the skill *listens*
-for, not what it *says*.
-
-What the upgrade is not, though, is a plain version bump, and the report should not let the reader
-believe it is: the runtime changes underneath them whether they planned it or not. That is the whole
-hook — *you think you are bumping a TFM, and you are also changing runtimes.*
+**Terminology — say "upgrade", not "migration".** .NET 9 or 10 → .NET 11 is an *upgrade*: same stack, a
+version forward. In this ecosystem "migration" already means Xamarin.Forms → MAUI, and borrowing that
+word makes a week of work sound like a quarter of it. Three uses are deliberate: Xamarin.Forms → MAUI,
+Newtonsoft → System.Text.Json or any move between two libraries, and the `description`, which is what the
+skill *listens* for rather than what it *says*. It is not a plain version bump either, and the report
+should not imply it is — the runtime changes underneath them whether they planned it or not.
 
 **Each rule fires once, present or absent — never per occurrence.** One `x:Code` block or six deduct the
-same, and that is deliberate: **this axis counts how many kinds of hazard you have, not how much of
-each.** The category decides whether you can move — an element-form `RelativeSource` breaks the build in
-one view or in twenty — and the volume decides how long it takes, which is what the fix list's scope line
-is for. The one rule banded by count is Xamarin-era packages, because each one is a separate "find the
-replacement" task with its own maintainer, so there the volume *is* a different kind of problem.
-Splitting it that way also means no dimension can bottom out and stop discriminating: **every rule set
-sums to less than its dimension's maximum**, so a heavier repo always scores below a lighter one instead
-of both hitting the floor. The worst case allowed by each table is −49 of 50, −19 of 20 and −25 of 30,
-and that margin is load-bearing — **re-check it whenever a rule value changes**, because a rescale that
-pushes a table to its own maximum silently destroys the ranking at the bottom.
+same: **this axis counts how many kinds of hazard you have, not how much of each.** Volume decides how
+long it takes, which is what the fix list's scope line is for. Two rules are banded by count and both say
+so in the table — Xamarin-era packages, where each one is a separate "find the replacement" task with its
+own maintainer, and `x:DataType` coverage, which is a proportion by construction.
+
+**Every rule set sums to less than its dimension's maximum**, so a heavier repo always scores below a
+lighter one instead of both hitting the floor. The worst case allowed by each table is −49 of 50, −19 of
+20 and −25 of 30, and that margin is load-bearing — **re-check it whenever a rule value changes**.
 
 **That −49 assumes an Android TFM exists, and on a project without one it is wrong.** Four D1 rules are
 Android-only — `minSdk`, the 32-bit RIDs, the invalid AOT combination and Mono AOT tuning, 21 points
-between them — and both gates are Android-only too. An iOS-only project therefore cannot score below
-24 on D1 and can never come back "Blocked", not because it is in better shape but because most of the
-table cannot reach it.
+between them — and both gates are Android-only too. An iOS-only project therefore cannot score below 24
+on D1 and can never come back "Blocked", not because it is in better shape but because most of the table
+cannot reach it.
 
-The scale is **not** renormalised for this, deliberately: the card and the badge exist to be pasted into
-a README and compared against another project's, and a score computed on a different denominator in
-each report destroys exactly that. Declare it instead. One Android TFM is enough for the rules to be
-live, so this applies only to a project with no Android leg at all, and then the dimension's section
-says so in full:
+**The scale is not renormalised for this.** The card and the badge exist to be compared against another
+project's, and a score computed on a different denominator in each report destroys exactly that. Declare
+it instead. One Android TFM is enough for the rules to be live, so this applies only to a project with no
+Android leg at all, and then the dimension's section says so in full:
 
 > *No Android TFM in this project, so 21 points of this dimension could not fire: `minSdk`, 32-bit RIDs,
 > the AOT combination and Mono AOT tuning are Android rules. Read 43/50 as "nothing wrong in what
 > applies", not as "better than an Android project that scored 38".*
 
-That last sentence is the one doing the work. Without it the number lies by omission; with it, the
-reader knows what they are comparing. The Upside axis already carries the mirror image of this and says
-so on the Android reach row.
+That last sentence is the one doing the work: without it the number lies by omission. The Upside axis
+carries the mirror image of this on its Android reach row.
 
 **What the points measure.** Readiness scores the *work and risk* between this repo and a CoreCLR build
-that runs. It does not score urgency. A dimension is weighted by what it costs to close — including the
-research needed to find it — not by how loudly it fails. Urgency is carried by the severity marks
-(`✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is`) and by the "Breaks the build" section.
-
-That is why the two can look inverted and both be right: a build-breaking XAML form worth 7 points opens
-the report, while a 15-point pile of Xamarin-era packages that builds fine today sits further down —
-nothing stops shipping, and every one of them is someone else's repo to chase. The XAML fix is a
-morning; the packages are the sprint. **When the score and the severity marks seem to disagree, the
-marks are the ones that answer "what do I do on Monday".** Say so in the report rather than letting the
-reader reconcile it alone.
+that runs, weighted by what it costs to close — including the research needed to find it. **It does not
+score urgency.** Urgency is carried by the severity marks and the "Breaks the build" section, which is
+why the two can look inverted and both be right: a build-breaking XAML form worth 7 points opens the
+report while a 15-point pile of Xamarin-era packages that builds fine today sits further down. **When the
+score and the marks seem to disagree, the marks answer "what do I do on Monday".** Say so in the report
+rather than letting the reader reconcile it alone.
 
 **Gates — cap the total at 30, verdict "Blocked"**
 
@@ -316,6 +290,16 @@ reader reconcile it alone.
   the gate — needing them is.
 - **G2 · Android `minSdk` < 24 and it cannot be raised.** .NET 11 requires API 24. If it *can* be
   raised it is not a gate, just the −3 in D1.
+
+**Every value in the `Pts` column is exact. There are no ranges to interpolate inside.** A rule either
+fires at its stated value or does not fire at all. Two rules in this whole skill are *banded* — they are
+marked `banded` and the band is a function of a count you can verify, not of judgment. The three TFM
+rows look like a range and are not: they are three mutually exclusive rules and exactly one fires.
+
+**If you cannot determine whether a rule fires, it did not fire.** Say so, name the rule and say what
+you could not check. **Never estimate a value, never interpolate one, and never invent a rule that is
+not in these three tables.** A score built from estimates is not this skill's score, and the card
+promises it is reconstructible — a reader who knows the rules will check.
 
 **D1 · Build & TFM — 50** (the dominant factor in whether you can move at all: distance plus the
 configuration that has to change. Mechanical and predictable — every point here is a known edit with a
@@ -341,7 +325,7 @@ nothing compiles until it is fixed)
 |---|---|---|
 | `<Binding RelativeSource="…">` element form | −7 | MAUIX2002: not a bindable property in element syntax. Use `{Binding …, Source={RelativeSource …}}`. Reproduced on preview 5. |
 | `x:Code` block | −6 | MAUIG1001 from inside the XAML generator, plus a cascading CS8795. Fails even with `EnablePreviewFeatures=true`. **Preview-5 state and the likeliest of these to disappear** — re-check at GA. |
-| `x:DataType` coverage | 0 all views · −3 most · −4 fewer than half · −6 none | Not a break. Compiled bindings turn a type mismatch into a build error instead of a silent default — and, as it happens, they are also what keeps reflection-serialized properties alive under aggressive trimming. |
+| `x:DataType` coverage · `banded` | 0 all views · −3 most · −4 fewer than half · −6 none | Not a break. Compiled bindings turn a type mismatch into a build error instead of a silent default — and, as it happens, they are also what keeps reflection-serialized properties alive under aggressive trimming. |
 
 > **The denominator is XAML that binds, not every `.xaml` in the repo.** `App.xaml`, `AppShell.xaml`,
 > resource dictionaries and style files have no binding context and nothing to type; counting them
@@ -359,7 +343,7 @@ everything else here the fix is often outside your control: you escalate to a ma
 
 | Rule | Pts | Why |
 |---|---|---|
-| Xamarin.Forms-era packages | 0 none · −6 one · −10 two or three · −15 four or more | Old TFMs resolving via fallback; may lack arm64/net11 assets or trim-clean code. Each is a "find the replacement" task, and several have no maintainer. |
+| Xamarin.Forms-era packages · `banded` | 0 none · −6 one · −10 two or three · −15 four or more | Old TFMs resolving via fallback; may lack arm64/net11 assets or trim-clean code. Each is a "find the replacement" task, and several have no maintainer. |
 | Java/Kotlin bindings or embedded native libs of your own **with no `arm64-v8a` slice, or none you could verify** | −4 | They must be rebuilt for arm64, and it fails at runtime rather than at compile time. Open the archive before scoring — `unzip -l lib.aar \| grep jni/` — because one that already ships arm64 costs nothing. If you cannot inspect it, deduct and say the check is pending. |
 | AndroidX packages pinned to explicit versions instead of resolving through MAUI's graph | −2 | `NU1608` at restore when the MAUI bump moves the pinned range: MAUI pins the AndroidX line, an explicit pin that sits outside it fails the restore, and realigning them is part of the upgrade. `Lifecycle.LiveData.*` is the one that shows up most. Not a runtime failure. |
 | Firebase / Crashlytics / AppCenter | −2 | Binding-heavy, historically the slowest to publish new-TFM assets. |
@@ -369,6 +353,39 @@ everything else here the fix is often outside your control: you escalate to a ma
 > breakage and no source supports that — a library that uses AppCompat types needs the reference on any
 > TFM. The one real case is a *binding* project wrapping Java classes that extend `AppCompatActivity`:
 > report it if the binding fails, score nothing.
+
+**Write it out like this, and let the rows produce the total.** This is the form the report uses, and
+the reason it uses it is that an invented value cannot survive it — the column of rules is checkable
+against the three tables above, and the column of `file:line` is checkable against the repo.
+
+```
+D1 · Build & TFM                                              50
+  TFM is net9                              −7   App.csproj:4
+  Android SupportedOSPlatformVersion 21     −3   App.csproj:25
+  RuntimeIdentifiers lists android-arm      −7   App.csproj:137
+  no global.json                            −1   —
+                                          ────
+                                           −18   →  32/50
+
+D2 · XAML                                                     20
+  x:DataType · banded · 9 of 24 bare → most  −3   24 files that bind
+                                          ────
+                                            −3   →  17/20
+
+D3 · Dependencies                                             30
+  Xamarin-era · banded · 2 found → two or three  −10   App.csproj:180,186
+  AndroidX pinned explicitly                      −2   App.csproj:186-195
+  Firebase                                        −2   App.csproj:180
+                                               ────
+                                                −14   →  16/30
+
+Readiness  32 + 17 + 16  =  65/100
+```
+
+Four things that example is showing on purpose. Every value appears verbatim in a table above. The two
+banded rules print the count that selected the band, so the choice is auditable. A rule with no
+`file:line` says why (`global.json` is an absence; there is no line to point at). And the dimension
+totals are a sum of the rows above them, never a figure chosen first.
 
 ### Reported, never scored
 
@@ -416,10 +433,8 @@ story, and the report owes the reader an accurate version of it rather than a sc
 
 ### 4b · Score the second axis: Upside
 
-Readiness answers *can we upgrade*. It does not answer *should we* — and those are different
-decisions, often made by different people. Two of the first three projects scored this way came out
-inverted: one was ready to upgrade but had nothing to gain, the other had plenty to gain but wasn't
-ready. A single number hides exactly the thing the team needs to decide.
+Readiness answers *can we upgrade*; it does not answer *should we*. A single number hides exactly the
+thing the team needs to decide.
 
 Upside is a **weighting of the measured evidence by this app's profile**: how much of the gain we
 measured can this app actually capture. It is not a prediction of speed, and it is reported as a band —
@@ -477,13 +492,10 @@ table and the most conditional: `2.9×` in the published session, `9.9×` in a l
 identical objects with tier-1 fully warm, conditions no real screen reproduces. In the gains table those
 travel with the "applies when" column that makes them true. **A caption travels alone**, into a
 screenshot and a meeting, and that is where either figure stops being a measurement and becomes a
-promise. Name the row this repo actually earned instead
-— `up to 44% less time on list work` for one that sorts and filters, `up to 53% less time on date work`
-for one that parses dates in bulk — and let the body say what the JSON path is worth and what it costs
-to get there.
-
-Nothing is lost by this. The reader still gets the figure two paragraphs down, with the conditions
-attached, which is the only form in which it is true.
+promise. Name the row this repo actually earned instead — `up to 44% less time on list work` for one
+that sorts and filters, `up to 53% less time on date work` for one that parses dates in bulk — and let
+the body say what the JSON path is worth and what it costs to get there. The reader still gets that
+figure two paragraphs down, with its conditions attached, which is the only form in which it is true.
 
 **On a reflection serializer there is no JSON figure at all.** Newtonsoft, reflection mappers and ORMs
 were never run on both runtimes, and the steady-state number is no safer a fallback, because the JSON
@@ -493,56 +505,274 @@ are on today**,
 with the measured runtime gain sitting *after* it. Two steps, and only the second one is this upgrade —
 same shape as the startup findings, and it gets the same plain treatment.
 
+## Fix snippets
+
+**Everything below is content for the report, not commands to run.** These blocks get adapted to their
+names and pasted into the fix list and the upgrade steps; the reader decides when to apply them. Two of
+them — the A/B build and the `adb` timing commands — compile the app and deploy it to a device, and the
+A/B also needs a second TFM added to the `.csproj` first. **Never execute any of this** (see
+*Read, report, change nothing*). The only commands this skill runs are the read-only ones in step 1.
+
+Adapt names; keep the conditions — most upgrade bugs were a property applying to the wrong runtime.
+
+**Release Android matrix, per TFM.** From .NET 11 the runtime follows the TFM: `net11.0-android` is
+CoreCLR and there is no switch. `<OLD>` below is the TFM they are on today — `net9.0-android`,
+`net8.0-android`, whichever it is — and that block is only worth keeping while they hold it to compare
+against.
+
+```xml
+<!-- net11 · CoreCLR, the only runtime -->
+<PropertyGroup Condition="'$(Configuration)' == 'Release' and $(TargetFramework.StartsWith('net11.0-android'))">
+  <AndroidLinkMode>SdkOnly</AndroidLinkMode>
+  <PublishReadyToRun>true</PublishReadyToRun>
+</PropertyGroup>
+
+<!-- <OLD> and earlier · Mono. Full because SdkOnly has a verified Mono regression
+     in the .NET 10/11 preview (dotnet/maui#33032). -->
+<PropertyGroup Condition="'$(Configuration)' == 'Release' and $(TargetFramework.StartsWith('<OLD>'))">
+  <AndroidLinkMode>Full</AndroidLinkMode>
+  <RunAOTCompilation>true</RunAOTCompilation>
+</PropertyGroup>
+```
+
+> **Deliberately not in that block: `EmbedAssembliesIntoApk` and `AndroidUseAssemblyStore`.** Both were
+> set on both runtimes to make the benchmark APKs comparable, never measured as recommendations, and
+> `AndroidUseAssemblyStore=false` opts out of a default that speeds assembly loading. Do not suggest
+> them. If the reader already has them set, say they were measurement settings, not advice.
+
+**`MauiEnableFullReadyToRun` — the one new lever this upgrade brings.** In Release, CoreCLR does
+**partial** ReadyToRun by default; the full pass is opt-in:
+
+```xml
+<MauiEnableFullReadyToRun>true</MauiEnableFullReadyToRun>
+```
+
+It trades APK size for startup, in that direction. **We did not measure it** — our runs predate the
+partial default — so offer it as a lever to try with the A/B below, never as a figure. It belongs in the
+fix list next to the MIBC profile: both are build-config work, both Android, both measurable by them in
+an afternoon.
+
+**Side-by-side A/B — one line plus IDs.** Their baseline is the app they ship today, so there is no
+switch to build: add the new TFM next to the current one and give each a distinct `ApplicationId` so
+both can be installed at once. Use their TFM and their package id, not these placeholders.
+
+```xml
+<TargetFrameworks><OLD>;net11.0-android</TargetFrameworks>
+
+<PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+  <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+  <ApplicationId Condition="$(TargetFramework.StartsWith('<OLD-PREFIX>'))">com.company.app.old</ApplicationId>
+  <ApplicationId Condition="$(TargetFramework.StartsWith('net11.'))">com.company.app.net11</ApplicationId>
+</PropertyGroup>
+```
+
+```bash
+dotnet build -c Release -f <OLD> -t:Run              # what they ship today · Mono
+dotnet build -c Release -f net11.0-android -t:Run    # after the upgrade · CoreCLR
+```
+
+This measures **the upgrade**, not the runtime in isolation — MAUI and the BCL move with it. That is
+also the decision they are actually making.
+
+Measure each one the same way, from a cold process:
+
+```bash
+adb shell am force-stop com.company.app.net11
+adb shell am start -W -n com.company.app.net11/<activity> | grep TotalTime
+```
+
+Ten cold starts per TFM, median and range — never the mean; GC spikes and JIT tiering hit the runtimes differently.
+
+**Android minimum + 64-bit only:**
+
+```xml
+<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
+```
+
+**`x:Code`** — no fix beyond removing it: it does not compile on preview 5 even with
+`EnablePreviewFeatures=true`. Move the code to the code-behind partial.
+
+**MAUIX2002** — `<Binding Path="Title" RelativeSource="…"/>` → `{Binding Title, Source={RelativeSource AncestorType={x:Type v:CardView}}}`.
+
+**Route registration without `GetTypes()`:**
+
+```csharp
+Routing.RegisterRoute(nameof(OrdersPage), typeof(OrdersPage));   // explicit, trim-safe, ~free at startup
+```
+
+**STJ source-gen** (replaces Newtonsoft / reflection STJ):
+
+```csharp
+[JsonSerializable(typeof(List<OrderDto>))]
+internal sealed partial class AppJsonContext : JsonSerializerContext { }
+var orders = JsonSerializer.Deserialize(json, AppJsonContext.Default.ListOrderDto);
+```
+
+**See trim warnings before CoreCLR shows them as crashes:** `<EnableTrimAnalyzer>true</EnableTrimAnalyzer>`
+and `<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>` in Release; every `IL2xxx` is a
+work item.
+
+**Lazy first page** — a `DataTemplate` captures the XAML recipe without instantiating it (CommunityToolkit's
+`LazyView<T>` only defers a *type* via `new T()`, so many instances of one view with different inline
+content come out identical and empty):
+
+```csharp
+[ContentProperty(nameof(Template))]
+public sealed class LazyContentView : ContentView
+{
+    public DataTemplate? Template { get; set; }
+    public void Load() { if (Content is null && Template is not null) Content = (View)Template.CreateContent(); }
+}
+```
+
+```xml
+<v:LazyContentView x:Name="Card7"><DataTemplate><v:HomeCardView Title="…"/></DataTemplate></v:LazyContentView>
+```
+
+Materialize in small batches from `OnNavigatedTo` via `Dispatcher.DispatchDelayed(…)` after the first
+frame. Logging: `#if DEBUG` around `options.EnableDebug()` and friends.
+
+## Things the reference upgrade hit that are easy to miss
+
+The first three are troubleshooting knowledge — use them when the symptom comes up, don't pad the report
+with them. The fourth belongs in **Preview notes** on every report.
+
+- "Random crashes on Release after upgrading" → check `RunAOTCompilation` + `AndroidLinkMode=None` first.
+- A XAML build error names a file and an error code, never a cause. `MAUIG1001` in particular comes from inside the generator and says nothing useful — search the code, not the message.
+- `pidof` doesn't prove which package is on screen when two variants are installed; `dumpsys window | grep mCurrentFocus` does. Worth passing on with the A/B snippet, since that is where two variants exist.
+- Numbers above are from a **preview** SDK; the SdkOnly-on-Mono regression, XA1030 not firing and the MIBC tooling workaround may all change by GA. Tell the user to re-check anything preview-specific they depend on.
+
+## When the user only wants the upgrade steps
+
+Run steps 1–2 anyway — they are the cheap part and nothing downstream is right without them — and hand
+back the steps that apply plus the two or three findings that would bite first. The `file:line` findings
+are what makes the upgrade go smoothly and they stay in either case.
+
+**This changes what you deliver, never how you deliver it.** If they asked for steps in the chat, answer
+in the chat and write no file. **If you write a file, it is the report** — `coreclr-fit.md`, the full
+skeleton, the card, the sign-off. There is no short version of the file: a `coreclr-fit.md` that is
+missing the card or the sign-off is indistinguishable from one where the analysis quietly fell short,
+and the reader has no way to tell which they are holding.
+
+And the skill still changes nothing. Handing over the steps is not the same as running them.
+
 ### 5 · Write the report
 
-Save as `coreclr-fit.md` at the solution root and print the score card in the conversation. Drop empty
-sections instead of padding them.
+One file, `coreclr-fit.md`, at the solution root, plus the score card printed in the conversation.
 
-**Language — write the report in the language the person wrote to you in.** Whatever that language is.
-Spanish in, Spanish out; Portuguese in, Portuguese out; German, French, Japanese, the same. This is not
-a choice between two languages with English as the neutral one: English is simply what you fall back to
-when you genuinely cannot tell, which is rare — one message is usually enough. Infer it, don't ask.
+**Copy the skeleton below and fill the slots.** Do not design a structure of your own, do not reorder it,
+and do not decide section by section whether something is worth including. The parts written out in full
+— the baseline paragraph, the severity legend, the version line, the sign-off — are already correct;
+reproduce them, do not rewrite them. Two reports have to be readable side by side, and that only works
+if they are the same document with different values in it.
 
-Only two things override that, and neither is a guess:
+````markdown
+# CoreCLR fit: {app} ({their TFM} → .NET 11)
 
-- **They asked for another language**, in the chat or at step 3. *"This goes to our US client"* is such a
-  request even if it does not sound like one.
-- **They want the chat in one language and the file in another.** Normal request, not an edge case.
+{score card — geometry below}
 
-**A repo written in English is a hint, not an instruction.** README, code comments and commit messages
-in English suggest the report may travel to English readers, and that is worth one line — *"the repo is
-in English, want this in English too?"* — but it never silently overrides the language they are writing
-in. The person running the skill is the one who knows who reads it next.
+{headline: one sentence, the decision they came for}
 
-State the choice in one line when you hand the report over — *"Written in Spanish; say the word and I'll
-redo it in English"* — because this file gets committed, forwarded and pasted into tickets, and the
-person running the skill is often not its last reader.
+## What breaks the build
+{only if something does · structure below · drop the whole section if nothing breaks}
 
-**What never translates**, in any language:
+## What was analyzed
+{csproj · TFM · the SDK that evaluated it and whether its major matches · file counts ·
+ evaluated or read · every assumption taken when nobody answered step 3, under a heading
+ that says they were taken automatically}
 
-- Identifiers and code: property names, type names, MSBuild properties, file paths, `file:line`
-  references, error codes like `MAUIX2002`, and every XAML/C# snippet.
-- **The badge**, which is a string inside a URL and the part of this report that travels furthest from
-  the document explaining it.
-- **The sign-off block** at the end.
+## Blockers
+{only if a gate fired · drop the whole section if none did}
 
-**Everything else translates, including the vocabulary.** The axis labels, the bands, the severity
-wording and the confidence labels are there to be understood, and a reader who has to decode `Upside`
-before reading their own report is one the report lost. `Upside` is finance jargon even in English.
+## Readiness by dimension
+{one block per dimension, each deduction as `rule → value → file:line`, totals recomputed
+ from the rows · state what passed too · name the rules that could not fire and their points}
 
-- `Readiness` → *Preparación* · `Upside` → *Ganancia*. **Gloss the English once**, on first use
-  — *"Preparación (Readiness)"* — so someone who has seen another report recognises it, then use the
-  translation from there on.
-- `LOW` / `MEDIUM` / `HIGH` → *BAJA* / *MEDIA* / *ALTA*. A three-value scale reads in any language.
-- `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is` — translate the words, **never the
-  symbols**. `✖ ◐ ○` are the visual anchor and they are what makes the list scan.
-- `measured` / `inferred` / `not measured` / `observed, cause not isolated` — translate, and keep the
-  four distinct. The distinction is the point, not the English.
+## Upside by signal
+{the four rows with the points earned and the count behind each · name the absent axes
+ that apply to this repo}
 
-**Print the severity legend the first time a mark appears, once, right under that section.** The marks
-carry the urgency of the whole report and a reader who meets `◐` with no key just skips it:
+## Reported, never scored
 
-> `✖` rompe el build · `◐` bloquea la ganancia · `○` corre como está
+> `✖` breaks the build · `◐` blocks the gain · `○` runs as-is
+
+{the ◐ and ○ findings with file:line and scope · the Full trimming note when there are
+ reflection findings}
+
+## Fix list
+{tiers · every item carries all four requirements · state the projected total per tier}
+
+## Projected gains
+
+> Measured on .NET 11 preview 5 with both runtimes on the same code. Your baseline is
+> **`{their TFM}`** with Mono, which we did not measure — we assume the Mono side behaves
+> comparably for this kind of work. Treat these as approximations until you measure your own.
+
+{the gains table, weighted by what the search found, groups kept, rows that do not apply dropped}
+
+## What happens if you do nothing
+{only when staying put is a real option · the LTS alternative, what they give up,
+ what they keep · drop the section when .NET 11 is the only sensible destination}
+
+## Upgrade steps
+{only the snippets that apply to this repo, with their names in them}
+
+## Preview notes
+{what to re-check at GA · the LTS runway so nothing reads as urgent}
+
+*Produced by {agent} running {model}, self-reported.*
+{the mid-tier warning, if it applies}
+
+> *These figures come from the `coreclr-fit v1` evidence set, measured on .NET 11 preview 5. They are
+> re-measured when the runtime changes; the current set is always at skills.horus.com.uy/coreclr-fit.*
+
+## Badge
+
+```markdown
+![CoreCLR readiness](https://img.shields.io/badge/CoreCLR_readiness-{score}%25-{colour})
+```
+
+---
+
+```
+   ▄██▀▀██▄
+ ▄█▀   ██▀  ▄     h o r u s   s t u d i o .
+██  ▄▄▄   ▄███
+██ ██▀██▄██ ██    CoreCLR fit · built from a real Mono → CoreCLR
+███▀   ▀▀▀  ██    upgrade on .NET 11, measured on device
+ ▀  ▄██   ▄█▀     Need a hand with this? horus.com.uy/contact
+   ▀██▄▄██▀       skills.horus.com.uy/coreclr-fit
+```
+````
+
+**The section set is closed.** Three sections are conditional — *What breaks the build* and *Blockers*
+appear only when something fires, and *What happens if you do nothing* only when staying put is a real
+option; every other section appears in every report. Nothing may be added, nothing else removed, nothing
+reordered — the reader's decision is made in the first two sections, and a report that opens somewhere
+else costs them that. A section with little to say gets one honest line, not deletion: *"No Xamarin-era
+packages and no native bindings — nothing to report here"* is information. Silence is not.
+
+**If the report does not end with the sign-off block, the report is not finished.** It is the last thing
+in the file, after everything else, inside a fenced block, preceded by a `---` rule. Do not translate it,
+do not re-space it, do not resize the mark, and never move it into the score card — the card is the part
+people screenshot and it stays about their project, not about who wrote the tool. This is the only
+decorative element in the report, and the contact line is an offer, not a call to action: in a document
+that has just said their UI thread will not get faster and their APK will grow, a line that does not push
+is the more credible one.
+
+
+##### The score card
+
+**Geometry, so two cards line up.** The box is **72 characters wide**, borders included: `┌`/`└` plus 70
+`─`, and every content line is `│` + two spaces + 68 characters of content padded with spaces + `│`.
+Count the padding; do not eyeball it. A card that does not align is the first thing a reader notices and
+the last thing they trust.
+
+**Bars come in two lengths, and mixing them breaks the width.** The two axis bars at the top are **20
+characters**, filled = `round(score / 5)`. The three dimension bars below are **10 characters**, filled =
+`round(10 × points / maximum)` — so `43/50` is 9 filled, `17/20` is 9, `24/30` is 8. `█` is filled, `░` is
+empty, and the Upside bar uses its 0–100 points even though the card prints the band, so the two axis
+bars stay comparable.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -565,33 +795,33 @@ carry the urgency of the whole report and a reader who meets `◐` with no key j
 │     skills.horus.com.uy/coreclr-fit                                  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
-
 **Every number on that card has to be reconstructible from the rules.** Each dimension line names the
 deductions behind it and they have to add up: `43/50` is `net9` at −7 and nothing else; `10/20` is the
 element-form binding at −7 plus partial `x:DataType` coverage at −3; `18/30` is two Xamarin-era packages
-at −10 plus Firebase at −2. Write the deductions first and let them produce the number — never pick a
+at −10 plus Firebase at −2. **Write the deductions first and let them produce the number** — never pick a
 total and justify it afterwards, because a reader who knows the rules will check, and that is the whole
 point of publishing them.
 
 Note `34 xaml (24 bind)` in the footer and `9 of 24 bare` on the XAML line. They are different counts on
 purpose: the coverage rule's denominator is the XAML that binds, not every `.xaml` in the repo.
 
-The bottom lines matter more than they look. `6 of 42 candidates verified` states the coverage of
-the analysis instead of implying it was exhaustive — the honesty is the point, and a reader who knows
-their own codebase can tell you where to look next. The footer also versions the skill, so a score can
-be traced to the rules that produced it.
+The bottom lines matter more than they look. `6 of 42 candidates verified` states the coverage of the
+analysis instead of implying it was exhaustive. The footer also versions the skill, so a score can be
+traced to the rules that produced it.
 
-On a re-run, read the previous `coreclr-fit.md` and lead with the movement instead of the
-absolute number — it turns the report into a plan with a finish line, and the history line is worth
-keeping across runs:
+**Never print either axis without its caption.** `HIGH` on its own says nothing about what improves; the
+right-hand caption is what stops it being read as a blanket speed claim. Same for Readiness: the caption
+says what kind of work is left.
+
+On a re-run, read the previous `coreclr-fit.md` and lead with the movement instead of the absolute
+number — it turns the report into a plan with a finish line:
 
 ```
   58 → 71  (+13)   since 2026-06-04       58 ▁▃▅ 71
   ▲ TFM moved up, 32-bit RIDs dropped       ▼ 3 Xamarin-era packages left
 ```
 
-Then: one headline sentence, then the sections below in this order. Drop any that is empty; do not
-reorder them, because the reader's decision is made in the first two.
+##### What each slot must contain
 
 | # | Section | What it must contain |
 |---|---|---|
@@ -599,88 +829,108 @@ reorder them, because the reader's decision is made in the first two.
 | 2 | **What breaks the build** | Only if something does. Structure below |
 | 3 | **What was analyzed** | csproj, TFM, the SDK that evaluated it and whether its major matches the TFM, file counts, whether values were **evaluated or read**, and every assumption taken when nobody answered step 3 |
 | 4 | **Blockers** | Only if a gate fired |
-| 5 | **Readiness by dimension** (translated) | A table per dimension where **every deduction names `file:line`**. State what passed too — it is why the number is high. If the project has no Android TFM, say which rules could not fire and how many points that was |
-| 6 | **Upside by signal** (translated) | The four rows with the points this app earned and the count behind each one — *"LINQ: 54 call sites across 12 files → 34 of 45"*. The card shows a band and one caption; **this is the only place the reasoning behind it is visible**, and without it the band is a verdict with no argument. Name the absent axes here too when they apply |
-| 7 | **Reported, never scored** | The `◐` and `○` findings with `file:line` and scope, plus the `Full` trimming note when reflection findings exist. **Print the severity legend here if no earlier section already did** |
-| 8 | **Fix list** | See the four requirements below |
-| 9 | **Projected gains** | The baseline paragraph **verbatim, above the table**, then the table below weighted by what the search found, with the "available without upgrading" rows kept separate |
+| 5 | **Readiness by dimension** | A block per dimension where **every deduction names `file:line`** and the rows recompute to the total. State what passed too — it is why the number is high. If the project has no Android TFM, say which rules could not fire and how many points that was |
+| 6 | **Upside by signal** | The four rows with the points this app earned and the count behind each one — *"LINQ: 54 call sites across 12 files → 34 of 45"*. The card shows a band and one caption; **this is the only place the reasoning behind it is visible**, and without it the band is a verdict with no argument. Name the absent axes here too when they apply |
+| 7 | **Reported, never scored** | The `◐` and `○` findings with `file:line` and scope, plus the `Full` trimming note when reflection findings exist. The severity legend is printed here, in the skeleton |
+| 8 | **Fix list** | The four requirements below, on every item |
+| 9 | **Projected gains** | The baseline paragraph **verbatim, above the table**, then the table weighted by what the search found, with the "available without upgrading" rows kept separate |
+| 9b | **What happens if you do nothing** | Only when it is a real option. Almost always it is: .NET 10 is LTS, so moving there instead gets them back into support, keeps Mono and costs a fraction of this fix list. Say what they give up — the runtime gains and, on Android, the MIBC profile — and what they keep, which is every `○` finding, because that work pays on whatever they ship. **This is the section that makes the rest credible.** A report that never names the cheaper option reads as a sales document, and the reader knows it |
 | 10 | **Upgrade steps** | Only the snippets that apply to this repo, with their names in them |
-| 11 | **Preview notes** | What to re-check at GA, the LTS runway so nothing reads as urgent, and **the version line** below |
-| 12 | **Badge snippet** | Pasteable into their README; it is also how the report travels |
+| 11 | **Preview notes** | What to re-check at GA, the LTS runway so nothing reads as urgent, then the version line |
+| 12 | **Badge** | Pasteable into their README; it is also how the report travels |
 
-**The fix list has four requirements, and every item carries all four.** A table of one-liners is not a
-fix list — it is the summary of one, and it leaves the reader with nothing to do.
-
-1. **A severity mark**, in the canonical wording — `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is`. Never reword it: it is one of the strings the report does not translate, so that two reports can be read side by side.
-2. **The mechanism, in one or two sentences.** *Why* this costs them something, never "best practice".
-   If you cannot say what goes wrong, the item does not belong on the list.
-3. **A snippet using their names** — their packages, their types, their file. A generic snippet makes
-   the reader do the translation, which is the step where fix lists die.
-4. **A scope line counted from their repo** — *"28 files · every DTO on the API path"*. Never a duration.
-
-Order by score gained ÷ scope, split into tiers, and **state the projected total explicitly** —
-*"Tier 1 takes Readiness from 81 to 98"*. If something is deliberately not on the list, say so and say
-why; an unexplained ceiling below 100 reads as an oversight.
-
-```markdown
-![CoreCLR readiness](https://img.shields.io/badge/CoreCLR_readiness-71%25-green)
-```
-
-**The colour carries the verdict, so pick it from the score** — `brightgreen` 85–100 · `green` 70–84 ·
-`yellow` 50–69 · `orange` 30–49 · `red` below 30, and `lightgrey` when a gate fired, because a blocked
-project has no score worth colouring. A badge that is always the same colour tells the next reader
-nothing, and this is the part of the report that travels furthest from the document that explains it.
-
-**Close Preview notes with the version line.** The figures in this report have a date and will move,
-and a reader who finds the file in six months has no way to know that. One sentence, no roadmap:
-
-> *These figures come from the `coreclr-fit v1` evidence set, measured on .NET 11 preview 5. They are
-> re-measured when the runtime changes; the current set is always at skills.horus.com.uy/coreclr-fit.*
+**The badge colour carries the verdict, so pick it from the score** — `brightgreen` 85–100 · `green`
+70–84 · `yellow` 50–69 · `orange` 30–49 · `red` below 30, and `lightgrey` when a gate fired, because a
+blocked project has no score worth colouring. A badge that is always the same colour tells the next
+reader nothing.
 
 **Say that the numbers are versioned, never what is coming next.** A report that promises a measurement
 is still in circulation if that measurement never happens, and the backlog is ours, not theirs. Where an
-axis genuinely matters to *their* repo and we have no figure, that already belongs in the body — the
-Upside section names the absent axes that apply, with counts and without numbers. That is the honest
-half of this, and it is specific to them. The version line is only there so the reader knows the file
-has a shelf life.
+axis genuinely matters to *their* repo and we have no figure, that belongs in the body — the Upside
+section names the absent axes that apply, with counts and without numbers.
 
-**Sign-off block — last thing in the file, after everything else.** Reproduce it exactly as below,
-inside a fenced code block, preceded by a `---` rule. Do not translate it, do not re-space it, do not
-resize the mark, and never move it into the score card — the card is the part people screenshot and it
-stays about their project, not about who wrote the tool.
+##### The fix list · four requirements, on every item
 
-```
-   ▄██▀▀██▄
- ▄█▀   ██▀  ▄     h o r u s   s t u d i o .
-██  ▄▄▄   ▄███
-██ ██▀██▄██ ██    CoreCLR fit · built from a real Mono → CoreCLR
-███▀   ▀▀▀  ██    upgrade on .NET 11, measured on device
- ▀  ▄██   ▄█▀     Need a hand with this? horus.com.uy/contact
-   ▀██▄▄██▀       skills.horus.com.uy/coreclr-fit
-```
+A table of one-liners is not a fix list. It is the summary of one, and it leaves the reader with nothing
+to do.
 
-**This is the only decorative element in the report, and the contact line is an offer, not a call to
-action.** In a document that has just said their UI thread will not get faster and their APK will grow,
-a line that does not push is the more credible one. Do not embellish it, do not move it below the skill
-URL, and do not add a second one anywhere else.
+1. **A severity mark**, in the canonical wording — `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is`. Never reword it: two reports have to be readable side by side.
+2. **The mechanism, in one or two sentences.** *Why* this costs them something, never "best practice". If you cannot say what goes wrong, the item does not belong on the list.
+3. **A snippet using their names** — their packages, their types, their file. A generic snippet makes the reader do the translation, which is the step where fix lists die.
+4. **A scope line counted from their repo** — *"28 files · every DTO on the API path"*. Never a duration.
+
+Order by score gained ÷ scope, split into tiers, and **state the projected total explicitly** — *"Tier 1
+takes Readiness from 81 to 98"*. If something is deliberately not on the list, say so and say why; an
+unexplained ceiling below 100 reads as an oversight.
 
 **Size every fix by scope, never by time.** Count what has to change and let the reader price it:
-*"18 files · 34 call sites · 11 DTOs · 6 with custom converters"*. Tier headers sum scope the same way —
-*"Tier 2 — 1 item · 18 files"* — and the projected score carries no duration.
+*"18 files · 34 call sites · 11 DTOs · 6 with custom converters"*. Tier headers sum scope the same way.
+It is the skill's own rule turned on itself: **everything else in this report is backed and a duration is
+not.** The subject of a gain projection is code, which this skill can read; the subject of a day estimate
+is people, which it cannot see. If a size band is unavoidable, say **hours / days / weeks** and never a
+decimal — `0.25d` claims two-hour accuracy on work nobody has scoped.
 
-It is the skill's own rule turned on itself. **Everything else in this report is backed and a duration
-is not:** the subject of a gain projection is code, which this skill can read, and the subject of a day
-estimate is people, which it cannot see. Scope is also the more useful of the two — they can open the
-repo and count 18 files, and *"6 of 11 DTOs have custom converters"* says where the work will hurt,
-which *"4 days"* never did.
+##### Language
 
-If a size band is unavoidable, say **hours / days / weeks** — wide enough to survive a 3× error — and
-never a decimal. `0.25d` claims two-hour accuracy on work nobody has scoped.
+**Write the report in the language the person wrote to you in.** Spanish in, Spanish out; Portuguese,
+German, French, Japanese, the same. English is the fallback for when you genuinely cannot tell, which is
+rare — one message is usually enough. Infer it, don't ask.
 
-Use severity marks in the fix list so it scans in two seconds: `✖` breaks the build · `◐` blocks the
-gain · `○` runs as-is. Three symbols, no ambiguity. Avoid decorating
-beyond this — heavy box-drawing and emoji headings break in narrow terminals and read as noise in a
-report someone forwards to a client.
+Two things override that, and neither is a guess: **they asked for another language** (*"this goes to our
+US client"* is such a request even if it does not sound like one), or **they want the chat in one
+language and the file in another**. A repo written in English is a hint worth one line — *"the repo is in
+English, want this in English too?"* — never a silent override. State the choice in one line when you
+hand the report over, because this file gets committed and forwarded, and the person running the skill is
+often not its last reader.
+
+**What never translates:** identifiers and code (property names, type names, MSBuild properties, file
+paths, `file:line`, error codes like `MAUIX2002`, every snippet), **the badge**, and **the sign-off
+block**.
+
+**Everything else translates, including the vocabulary.** A reader who has to decode `Upside` before
+reading their own report is one the report lost.
+
+- `Readiness` → *Preparación* · `Upside` → *Ganancia*. **Gloss the English once** on first use — *"Preparación (Readiness)"* — then use the translation.
+- `LOW` / `MEDIUM` / `HIGH` → *BAJA* / *MEDIA* / *ALTA*.
+- `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is` — translate the words, **never the symbols**. `✖ ◐ ○` are what make the list scan.
+- `measured` / `inferred` / `not measured` / `observed, cause not isolated` — translate, and keep the four distinct. The distinction is the point, not the English.
+
+Avoid decorating beyond the severity marks and the card. Heavy box-drawing and emoji headings break in
+narrow terminals and read as noise in a report someone forwards to a client.
+
+##### Say what produced this report
+
+**Add one line to Preview notes naming the agent and model that produced it**, as self-reported:
+
+> *Produced by {agent} running {model}, self-reported.*
+
+A report that comes back thin is otherwise indistinguishable from a repo that had little to report, and
+six months later nobody can tell which one they are holding. This line costs nothing and settles it.
+
+**If you are not the most capable model your provider offers, say so, right under that line:**
+
+> ⚠ *Produced on a mid-tier model. The analysis is real, but this skill asks for a long chain of work on
+> a whole repository — evaluating the build, verifying every candidate before scoring it, and
+> reproducing a fixed report structure. A stronger model verifies more candidates and is less likely to
+> leave a section thin or a deduction estimated. If anything here reads shallow, re-run it on the
+> strongest model available to you and compare.*
+
+Judge that honestly rather than generously. The question is not whether you can do the task — you can —
+but whether this particular task, which is long and has an exact output contract, is one where the gap
+shows. It is.
+
+**And say it in the report when the run itself was degraded, whatever model you are.** This is the part
+that does not depend on knowing your own tier, and it catches the same damage:
+
+- Step 3 went unanswered and defaults were assumed → already required under *What was analyzed*.
+- A search could not run, or a rule could not be checked → name the rule and say it did not fire.
+- Candidates were scored without opening the file → say how many, in the card footer, where
+  `6 of 42 candidates verified` already lives.
+- The build could not be evaluated and values were read from the csproj instead → already required.
+
+Two or more of those in one run, and the headline says so in a sentence before anything else: *"this run
+was partial, and here is what was missing"*. A reader who knows the analysis was thin can act on it. A
+reader who does not know will act on it anyway, which is the failure this whole section exists to stop.
 
 #### "Breaks the build" — structure
 
@@ -848,12 +1098,12 @@ JSON 2.9× (interfaces, generics, virtual converters, spans) · dates 2.1× · L
 iterators) · UI bind ≈1× (framework interop) · shaders, no difference (the work is on the GPU). **The
 same ordering came out of a second session on a different phone**, where the spread was wider still
 (JSON `9.9×`, LINQ `1.7×`) — two independent runs agreeing on the order is what makes this a law rather
-than one dataset's shape. **The
-more layers of abstraction the code has, the larger CoreCLR's advantage** — that is tier-1 with dynamic
-PGO inlining and devirtualising, decisions that depend on observing at runtime which implementation
-actually arrives, which Mono's AOT cannot make at compile time. The uncomfortable corollary is worth
-saying out loud to a team that expects a speed-up everywhere: **a tight float-math loop will likely give
-1.5× and little more.** Moving work to the CPU is not enough; the work has to be *abstract*.
+than one dataset's shape. **The more layers of abstraction the code has, the larger CoreCLR's
+advantage**: that is tier-1 with dynamic PGO inlining and devirtualising, decisions that depend on
+observing at runtime which implementation actually arrives, which Mono's AOT cannot make at compile time.
+The corollary is worth saying out loud to a team that expects a speed-up everywhere: **a tight float-math
+loop will likely give 1.5× and little more.** Moving work to the CPU is not enough; the work has to be
+*abstract*.
 
 Weight each line by what the search found, and **cite the phase rows rather than the aggregate when the
 repo tells you which one applies** — the JSON row for an app whose screens deserialize, the LINQ row for
@@ -864,149 +1114,30 @@ numbers — almost the whole gap is that one phase. Write only the caveats that 
 "These are projections from a reference benchmark, not measurements of your app — the upgrade steps
 include the side-by-side TFM setup so you can measure before committing."
 
-## Fix snippets
+##### Before you hand it over
 
-**Everything below is content for the report, not commands to run.** These blocks get adapted to their
-names and pasted into the fix list and the upgrade steps; the reader decides when to apply them. Two of
-them — the A/B build and the `adb` timing commands — compile the app and deploy it to a device, and the
-A/B also needs a second TFM added to the `.csproj` first. **Never execute any of this** (see
-*Read, report, change nothing*). The only commands this skill runs are the read-only ones in step 1.
+Check these against the file you just wrote, not against your intention to write it. Each one is a thing
+that has actually gone missing from a real run.
 
-Adapt names; keep the conditions — most upgrade bugs were a property applying to the wrong runtime.
-
-**Release Android matrix, per TFM.** From .NET 11 the runtime follows the TFM: `net11.0-android` is
-CoreCLR and there is no switch. `<OLD>` below is the TFM they are on today — `net9.0-android`,
-`net8.0-android`, whichever it is — and that block is only worth keeping while they hold it to compare
-against.
-
-```xml
-<!-- net11 · CoreCLR, the only runtime -->
-<PropertyGroup Condition="'$(Configuration)' == 'Release' and $(TargetFramework.StartsWith('net11.0-android'))">
-  <AndroidLinkMode>SdkOnly</AndroidLinkMode>
-  <PublishReadyToRun>true</PublishReadyToRun>
-</PropertyGroup>
-
-<!-- <OLD> and earlier · Mono. Full because SdkOnly has a verified Mono regression
-     in the .NET 10/11 preview (dotnet/maui#33032). -->
-<PropertyGroup Condition="'$(Configuration)' == 'Release' and $(TargetFramework.StartsWith('<OLD>'))">
-  <AndroidLinkMode>Full</AndroidLinkMode>
-  <RunAOTCompilation>true</RunAOTCompilation>
-</PropertyGroup>
+```
+[ ] Score card present, 72 characters wide, every line padded, both bars 20 chars
+[ ] Both axes carry their caption
+[ ] Every section of the skeleton is there, in order, none added
+[ ] The three conditional sections are present or genuinely did not apply
+[ ] Severity legend printed above the first section that uses a mark
+[ ] Every deduction shows its rule, its value and its file:line
+[ ] Each dimension recomputed from the rows printed under it — if they disagree, the rows are right
+[ ] No deduction value invented: every one appears in a table in step 4
+[ ] Every fix list item carries all four requirements
+[ ] Baseline paragraph verbatim above the gains table, with their TFM in it
+[ ] Version line at the close of Preview notes
+[ ] Preview notes names the agent and model, and carries the mid-tier warning if it applies
+[ ] Anything that made this run partial is stated — unanswered questions, rules that could not
+    be checked, candidates scored without opening the file
+[ ] Badge colour matches the score band
+[ ] The last thing in the file is the sign-off block, verbatim
 ```
 
-> **Deliberately not in that block: `EmbedAssembliesIntoApk` and `AndroidUseAssemblyStore`.** Both were
-> set on both runtimes to make the benchmark APKs comparable, never measured as recommendations, and
-> `AndroidUseAssemblyStore=false` opts out of a default that speeds assembly loading. Do not suggest
-> them. If the reader already has them set, say they were measurement settings, not advice.
-
-**`MauiEnableFullReadyToRun` — the one new lever this upgrade brings.** In Release, CoreCLR does
-**partial** ReadyToRun by default; the full pass is opt-in:
-
-```xml
-<MauiEnableFullReadyToRun>true</MauiEnableFullReadyToRun>
-```
-
-It trades APK size for startup, in that direction. **We did not measure it** — our runs predate the
-partial default — so offer it as a lever to try with the A/B below, never as a figure. It belongs in the
-fix list next to the MIBC profile: both are build-config work, both Android, both measurable by them in
-an afternoon.
-
-**Side-by-side A/B — one line plus IDs.** Their baseline is the app they ship today, so there is no
-switch to build: add the new TFM next to the current one and give each a distinct `ApplicationId` so
-both can be installed at once. Use their TFM and their package id, not these placeholders.
-
-```xml
-<TargetFrameworks><OLD>;net11.0-android</TargetFrameworks>
-
-<PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
-  <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
-  <ApplicationId Condition="$(TargetFramework.StartsWith('<OLD-PREFIX>'))">com.company.app.old</ApplicationId>
-  <ApplicationId Condition="$(TargetFramework.StartsWith('net11.'))">com.company.app.net11</ApplicationId>
-</PropertyGroup>
-```
-
-```bash
-dotnet build -c Release -f <OLD> -t:Run              # what they ship today · Mono
-dotnet build -c Release -f net11.0-android -t:Run    # after the upgrade · CoreCLR
-```
-
-This measures **the upgrade**, not the runtime in isolation — MAUI and the BCL move with it. That is
-also the decision they are actually making.
-
-Measure each one the same way, from a cold process:
-
-```bash
-adb shell am force-stop com.company.app.net11
-adb shell am start -W -n com.company.app.net11/<activity> | grep TotalTime
-```
-
-Ten cold starts per TFM, median and range — never the mean; GC spikes and JIT tiering hit the runtimes differently.
-
-**Android minimum + 64-bit only:**
-
-```xml
-<SupportedOSPlatformVersion Condition="$(TargetFramework.Contains('-android'))">24.0</SupportedOSPlatformVersion>
-```
-
-**`x:Code`** — no fix beyond removing it: it does not compile on preview 5 even with
-`EnablePreviewFeatures=true`. Move the code to the code-behind partial.
-
-**MAUIX2002** — `<Binding Path="Title" RelativeSource="…"/>` → `{Binding Title, Source={RelativeSource AncestorType={x:Type v:CardView}}}`.
-
-**Route registration without `GetTypes()`:**
-
-```csharp
-Routing.RegisterRoute(nameof(OrdersPage), typeof(OrdersPage));   // explicit, trim-safe, ~free at startup
-```
-
-**STJ source-gen** (replaces Newtonsoft / reflection STJ):
-
-```csharp
-[JsonSerializable(typeof(List<OrderDto>))]
-internal sealed partial class AppJsonContext : JsonSerializerContext { }
-var orders = JsonSerializer.Deserialize(json, AppJsonContext.Default.ListOrderDto);
-```
-
-**See trim warnings before CoreCLR shows them as crashes:** `<EnableTrimAnalyzer>true</EnableTrimAnalyzer>`
-and `<SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>` in Release; every `IL2xxx` is a
-work item.
-
-**Lazy first page** — a `DataTemplate` captures the XAML recipe without instantiating it (CommunityToolkit's
-`LazyView<T>` only defers a *type* via `new T()`, so many instances of one view with different inline
-content come out identical and empty):
-
-```csharp
-[ContentProperty(nameof(Template))]
-public sealed class LazyContentView : ContentView
-{
-    public DataTemplate? Template { get; set; }
-    public void Load() { if (Content is null && Template is not null) Content = (View)Template.CreateContent(); }
-}
-```
-
-```xml
-<v:LazyContentView x:Name="Card7"><DataTemplate><v:HomeCardView Title="…"/></DataTemplate></v:LazyContentView>
-```
-
-Materialize in small batches from `OnNavigatedTo` via `Dispatcher.DispatchDelayed(…)` after the first
-frame. Logging: `#if DEBUG` around `options.EnableDebug()` and friends.
-
-## Things the reference upgrade hit that are easy to miss
-
-The first three are troubleshooting knowledge — use them when the symptom comes up, don't pad the report
-with them. The fourth belongs in **Preview notes** on every report.
-
-- "Random crashes on Release after upgrading" → check `RunAOTCompilation` + `AndroidLinkMode=None` first.
-- A XAML build error names a file and an error code, never a cause. `MAUIG1001` in particular comes from inside the generator and says nothing useful — search the code, not the message.
-- `pidof` doesn't prove which package is on screen when two variants are installed; `dumpsys window | grep mCurrentFocus` does. Worth passing on with the A/B snippet, since that is where two variants exist.
-- Numbers above are from a **preview** SDK; the SdkOnly-on-Mono regression, XA1030 not firing and the MIBC tooling workaround may all change by GA. Tell the user to re-check anything preview-specific they depend on.
-
-## When the user only wants the upgrade steps
-
-Run steps 1–2 anyway — they are the cheap part and nothing downstream is right without them — and hand
-back the steps that apply plus the two or three findings that would bite first. Skip the score card if
-they didn't ask; keep the `file:line` findings, which are what makes the upgrade go smoothly.
-
-**Two things still hold in this mode.** If you write a file, it is still `coreclr-fit.md` and it still
-ends with the sign-off block; if you answer in the conversation only, neither applies. And the skill
-still changes nothing — handing over the steps is not the same as running them.
+If one of these fails, fix it before handing the file over. A report that is missing the card or the
+sign-off is not a shorter version of this report — it is a different document, and the person reading it
+has no way to tell what else was left out.

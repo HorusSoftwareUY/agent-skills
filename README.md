@@ -47,6 +47,17 @@ Or as a plugin marketplace:
 claude plugin marketplace add HorusSoftwareUY/agent-skills
 ```
 
+### Which model to run it on
+
+Run it on the most capable model you have access to. This skill asks for a long chain of work on a whole
+repository: evaluating the build, searching 27 patterns, opening each candidate before scoring it, and
+then reproducing a fixed report structure. Smaller and faster models do the analysis, but they are more
+likely to verify fewer candidates or leave a section thin.
+
+The report says which model produced it, and flags when the run was partial, so you can tell the
+difference between a thin report and a repo with little to report. If something reads shallow, re-run it
+on a stronger model and compare the two.
+
 ### What you get
 
 A `coreclr-fit.md` written at the solution root, and a card printed in the conversation:
