@@ -18,6 +18,39 @@ conversation starter; the fix list with `file:line` references is the deliverabl
 from a real upgrade of a MAUI library + sample app from .NET 10 to .NET 11 preview 5, validated on
 device, and from the Mono-vs-CoreCLR benchmarks behind it.
 
+## Before you start · are you reading this verbatim?
+
+**This skill only works from its exact text.** The report it produces contains blocks that have to be
+reproduced character for character — a 72-column score card, a severity legend, a baseline paragraph, a
+version line and a sign-off. Those survive a verbatim read and do not survive a summary.
+
+Some agents fetch a URL and hand the model a *summary* of the page instead of the page. When that
+happens the rules usually come through and every literal block is gone, so the analysis looks right and
+the report is a different document. That is not a hypothetical: it is how the first failed run of this
+skill happened, and the scores in it were correct.
+
+**Check before you work.** Scroll to the end of what you are holding. If you cannot see the ASCII
+sign-off block, or the `markdown` skeleton in step 5, or all three scoring tables with their exact `Pts`
+values, you have a summary.
+
+If you do:
+
+1. **Get it through the filesystem, not through your web tool.** Whatever just handed you a summary
+   will hand you another one if you ask it again. Use a shell instead, then read the file you saved:
+
+   ```bash
+   curl -fsSL https://skills.horus.com.uy/coreclr-fit -o coreclr-fit-skill.md
+   ```
+
+   A file on disk is never summarised. If you have no shell, this step is not available to you and the
+   next one applies.
+2. **If you cannot get the verbatim text, say so and stop.** One sentence: *"I only have a summarised
+   copy of this skill, so I cannot produce its report. Install it, or give me the raw file."* Do not
+   produce a best-effort version: a report missing the card and the sign-off is indistinguishable from
+   one where the analysis fell short, and the reader has no way to tell which they are holding.
+3. If you do run anyway because the user insists, **say it in the first line of the report**, not in a
+   footnote, and expect the output contract check to fail.
+
 ## Principles
 
 **Evaluate, don't grep the csproj.** The properties that decide readiness come from chains of
@@ -175,7 +208,8 @@ you have. Record count and `file:line` for each:
 | XAML that binds (the `x:DataType` denominator) | `\{Binding\|\{TemplateBinding` | `*.xaml` |
 | `x:Code` blocks | `<x:Code` | `*.xaml` |
 | `RelativeSource` element form | `<Binding[^>]*RelativeSource=` | `*.xaml` |
-| Xamarin-era packages | `Include="(Xamarin\.Forms\|Xam\.Plugin\|Plugin\.(Permissions\|Connectivity\|Geolocator\|Media\|Settings))` | `*.csproj`, `*.props` |
+| **Every** `PackageReference` — the D3 package rule tests assets, so you need the whole list, not a filtered one | `<PackageReference Include="([^"]+)" *Version="([^"]+)"` | `*.csproj`, `*.props` |
+| Names worth opening first (a hint, never the verdict) | `Xamarin\.\|Xam\.Plugin\|Plugin\.(Permissions\|Connectivity\|Geolocator\|Media\|Settings)\|monoandroid` | `*.csproj`, `*.props` |
 | Native bindings | `<(AndroidLibrary\|LibraryProjectZip\|EmbeddedNativeLibrary\|NativeReference)`, plus any `*.aar` / `*.jar` / `*.so` in the tree | `*.csproj` |
 | AndroidX pinned explicitly | `Include="Xamarin\.AndroidX[\w.]*" *Version=` | `*.csproj`, `*.props` |
 | Crash/analytics SDKs **as packages** | `Include="[\w.]*(Firebase\|Crashlytics\|AppCenter)` | `*.csproj`, `*.props` |
@@ -250,7 +284,7 @@ should not imply it is — the runtime changes underneath them whether they plan
 **Each rule fires once, present or absent — never per occurrence.** One `x:Code` block or six deduct the
 same: **this axis counts how many kinds of hazard you have, not how much of each.** Volume decides how
 long it takes, which is what the fix list's scope line is for. Two rules are banded by count and both say
-so in the table — Xamarin-era packages, where each one is a separate "find the replacement" task with its
+so in the table — packages left behind, where each one is a separate "find the replacement" task with its
 own maintainer, and `x:DataType` coverage, which is a proportion by construction.
 
 **Every rule set sums to less than its dimension's maximum**, so a heavier repo always scores below a
@@ -343,11 +377,61 @@ everything else here the fix is often outside your control: you escalate to a ma
 
 | Rule | Pts | Why |
 |---|---|---|
-| Xamarin.Forms-era packages · `banded` | 0 none · −6 one · −10 two or three · −15 four or more | Old TFMs resolving via fallback; may lack arm64/net11 assets or trim-clean code. Each is a "find the replacement" task, and several have no maintainer. |
+| Packages left behind · `banded` · **test by assets, not by name** | 0 none · −6 one · −10 two or three · −15 four or more | Old TFMs resolving via fallback; may lack arm64/net11 assets or trim-clean code. Each is a "find the replacement" task, and several have no maintainer. **How to decide which packages count is below the table** — the name does not tell you. |
 | Java/Kotlin bindings or embedded native libs of your own **with no `arm64-v8a` slice, or none you could verify** | −4 | They must be rebuilt for arm64, and it fails at runtime rather than at compile time. Open the archive before scoring — `unzip -l lib.aar \| grep jni/` — because one that already ships arm64 costs nothing. If you cannot inspect it, deduct and say the check is pending. |
 | AndroidX packages pinned to explicit versions instead of resolving through MAUI's graph | −2 | `NU1608` at restore when the MAUI bump moves the pinned range: MAUI pins the AndroidX line, an explicit pin that sits outside it fails the restore, and realigning them is part of the upgrade. `Lifecycle.LiveData.*` is the one that shows up most. Not a runtime failure. |
 | Firebase / Crashlytics / AppCenter | −2 | Binding-heavy, historically the slowest to publish new-TFM assets. |
 | MAUI versions pinned per csproj instead of one `MauiVersion` | −2 | The workload and the pin drift apart; the bump becomes N edits instead of one. |
+
+> **Which packages are "left behind" — open the assets, do not read the name.** The name is a hint for
+> where to look first and nothing more, and it is wrong in both directions. `Microcharts.Maui` is named
+> for the current framework and ships `net6.0-*` only. `Xamarin.AndroidX.Core` carries the old brand and
+> ships `net10.0-android36.0`. Scoring either one from its name is a mistake the reader can see.
+>
+> The assets are on disk after any restore, so this is a read-only look, no network:
+>
+> ```bash
+> ls ~/.nuget/packages/<package.id>/<version>/lib/
+> ```
+>
+> The folder names are the frameworks it publishes for. **A package counts when either of these is
+> true:**
+>
+> - It ships `monoandroid*`, `xamarin.ios*` or `xamarin.mac*` assets. Genuinely Xamarin-era: those
+>   resolve onto a .NET TFM by fallback and were built before arm64-only and before trimming mattered.
+> - Its newest platform asset (`net*-android`, `net*-ios`) is **three or more majors behind** the TFM they
+>   are moving to — `net8.0-android` or older against a `net11.0-android` target. Three release cycles
+>   untouched, whatever it is called. **A package one or two majors back is current**: shipping
+>   `net10.0-android` the month .NET 11 lands is normal maintenance, not neglect, and deducting for it
+>   would punish almost every healthy dependency.
+>
+> **`netstandard2.0` or `netstandard2.1` alone does not count.** That is a portable library by design, it
+> resolves cleanly on every modern TFM, and deducting for it would hit half the ecosystem.
+>
+> **Do not count what another rule already counts.** Firebase, Crashlytics and AppCenter have their own
+> −2 row, and explicitly pinned AndroidX packages have theirs. A package caught by one of those is not
+> also counted here — *do not deduct twice for one cause*, which is the same rule that keeps reflection
+> out of this axis.
+>
+> **A package with no replacement still counts, and the report says so.** The deduction is for *this is
+> not keeping up and you do not control it*, which is true whether or not something exists to swap in.
+> What changes is the fix, not the risk — so put each counted package in one of three situations, by
+> name, in the fix list:
+>
+> - **A current replacement exists** → swapping it is ordinary work, and the scope line says how much.
+> - **No replacement, maintainer still active** → do not plan a rewrite. Test it against net11 first and
+>   open an issue early; most of these publish within a release.
+> - **No replacement, nothing published in years** → the one that can actually block. Say it plainly and
+>   early, because the answer may be writing the binding yourself or dropping the feature, and that is a
+>   product decision with a lead time.
+>
+> **Never write "replace this" for a package in the second or third situation.** It is advice the team
+> cannot act on, and it is how a fix list loses its reader.
+>
+> **If you cannot look** — the package was never restored, or there is no `lib/` because it is a native
+> or build-only package — say the check is pending and name the package, do not deduct. An unverified
+> deduction is exactly what this rule was rewritten to stop. List those packages under *Reported, never
+> scored* so the reader knows the first thing the net11 restore will tell them.
 
 > **Not a rule here: a missing `Xamarin.AndroidX.AppCompat` reference.** It used to deduct as a net11
 > breakage and no source supports that — a library that uses AppCompat types needs the reference on any
@@ -442,12 +526,50 @@ measured can this app actually capture. It is not a prediction of speed, and it 
 if it were a speed figure. Score 100 points internally (they make runs and projects comparable, and they
 drive the delta on a re-run), show the band, and put the points in the Upside table in the body:
 
+**These four values are banded, exactly like the D2 and D3 rules, and for the same reason.** Earlier
+versions gave a range per signal and nothing else, so two honest runs of the same repo could differ by
+more than twenty points on one row and land in different bands — which is the whole verdict. A range is
+not a rule. **Pick the band from a count you can show, never a number that feels right.**
+
 | Signal | Pts | How to read it |
 |---|---|---|
-| CPU-bound managed work on the critical path (parsing, transforming, sorting collections, formatting) | 0–45 | **What counts, with what we measured for each:** LINQ over collections — `Select`, `Where`, `OrderBy`, `GroupBy` (`−44%` time, `1.8×`) · date parsing and formatting (`−53%`, `2.1×`) · string building and object-to-object mapping (no figure of their own; same shape). **Score from counted hits, not impression** — this is the heaviest row on the axis and the easiest to inflate. The step 2 patterns are what earn it, and a hit only counts when it sits on a path the user waits for (a view model building a list, a service shaping a response), not in startup config or tests. It is the widest row because this work is everywhere and runs on every screen, even though each case gains less than JSON. An app whose screens are layout and native handlers scores near 0 — the UI thread measured ≈ 1×. |
-| Serialization that can use STJ source-gen | 0–25 | Full points when STJ + a context is already there. Half when it's STJ without a context — mechanical to add, and it lands in the measured configuration. Half too on Newtonsoft over own models, but for a different reason: that gain was **never measured**, and the points are for the trim-visible destination being reachable, not for a figure. Near 0 when there's barely any serialization. |
-| Session length | 0–18 | Long-lived sessions reach tier-1 and collect the steady-state gain; apps opened for seconds and killed live on the cold-start row of the gains table instead, and score low. |
-| Android reach (the MIBC startup profile) | 0–12 | Score it by how much of the product is Android — all of it → 12, one of two platforms → ~6, a minor platform → ~2 — and ask, because this is a share of installs, not of TFMs. **Why it belongs on an upgrade axis:** the gain comes from a custom MIBC profile feeding `crossgen2`, which is a CoreCLR mechanism. The figures live in the MIBC rows of the gains table; quote them from there and never from here. Two shortcuts to avoid: the Mono baseline was **not** handicapped, it ran profiled AOT with the SDK's own default `aotprofile`, and Mono does have an equivalent mechanism (a custom `*.aotprofile`) that **we did not measure**, expected to gain less because its default profile is already well tuned and it has no tiered JIT to recover afterwards. So: *measured on CoreCLR, Mono counterpart unmeasured and expected smaller* — never *it only exists on CoreCLR*. |
+| CPU-bound managed work on the critical path (parsing, transforming, sorting collections, formatting) · `banded` | 0 · 12 · 25 · 34 · 45 | **What counts, with what we measured for each:** LINQ over collections — `Select`, `Where`, `OrderBy`, `GroupBy` (`−44%` time, `1.8×`) · date parsing and formatting (`−53%`, `2.1×`) · string building and object-to-object mapping (no figure of their own; same shape). **Score from counted hits, not impression** — this is the heaviest row on the axis and the easiest to inflate. The step 2 patterns are what earn it, and a hit only counts when it sits on a path the user waits for (a view model building a list, a service shaping a response), not in startup config or tests. It is the widest row because this work is everywhere and runs on every screen, even though each case gains less than JSON. An app whose screens are layout and native handlers scores near 0 — the UI thread measured ≈ 1×. |
+| Serialization that can use STJ source-gen · `banded` | 0 · 2 · 12 · 25 | Full points when STJ + a context is already there. Half when it's STJ without a context — mechanical to add, and it lands in the measured configuration. Half too on Newtonsoft over own models, but for a different reason: that gain was **never measured**, and the points are for the trim-visible destination being reachable, not for a figure. Near 0 when there's barely any serialization. |
+| Session length · `banded` | 4 · 10 · 18 | Long-lived sessions reach tier-1 and collect the steady-state gain; apps opened for seconds and killed live on the cold-start row of the gains table instead, and score low. |
+| Android reach (the MIBC startup profile) · `banded` | 0 · 2 · 6 · 12 | Score it by how much of the product is Android — all of it → 12, one of two platforms → ~6, a minor platform → ~2 — and ask, because this is a share of installs, not of TFMs. **Why it belongs on an upgrade axis:** the gain comes from a custom MIBC profile feeding `crossgen2`, which is a CoreCLR mechanism. The figures live in the MIBC rows of the gains table; quote them from there and never from here. Two shortcuts to avoid: the Mono baseline was **not** handicapped, it ran profiled AOT with the SDK's own default `aotprofile`, and Mono does have an equivalent mechanism (a custom `*.aotprofile`) that **we did not measure**, expected to gain less because its default profile is already well tuned and it has no tiered JIT to recover afterwards. So: *measured on CoreCLR, Mono counterpart unmeasured and expected smaller* — never *it only exists on CoreCLR*. |
+
+**The bands, and what selects each one.**
+
+`CPU-bound managed work` — count the **verified** hits on paths the user waits for: LINQ over
+collections, date parsing and formatting, string building, object-to-object mapping. A hit in startup
+config, a test helper or a background job does not count, and step 2 says to open the file before
+counting it.
+
+| Verified hits on waiting paths | Pts |
+|---|---|
+| none — the screens are layout and native handlers | 0 |
+| 1 to 25 | 12 |
+| 26 to 100 | 25 |
+| 101 to 300 | 34 |
+| more than 300 | 45 |
+
+> **Then take one step down when the collections are small** — tens to low hundreds of items: API pages,
+> pickers, settings lists, a cart. The measured gains came from shaping real lists, and an app that runs
+> `Select` three hundred times over twelve items each is not the app those figures describe. There is no
+> step up: the top band already assumes volume. Say in the report which band the count selected **and
+> whether the step down was applied**, so the reader can check both.
+
+`Serialization` — **25** when STJ with a `JsonSerializerContext` is already in place · **12** when it is
+STJ without a context, or Newtonsoft over your own models · **2** when serialization is incidental
+(a settings blob, a cached token) · **0** when there is essentially none.
+
+`Session length` — **18** long-lived (a shift, a workday, a session someone leaves open) · **10** mixed
+or unknown after asking · **4** short (opened, used for seconds, killed). This is step 3's question; the
+default when nobody answers is short, which is the lower score.
+
+`Android reach` — **12** Android only · **6** one of two platforms · **2** Android is the minor platform
+· **0** no Android TFM. Score it by **share of installs**, not share of TFMs, and ask — the csproj says
+both platforms exist, never which one the product lives on.
 
 > **Recoverable startup weight is deliberately not a signal here.** It was the single largest win in the
 > investigation, but it is app code and **lands on whatever they ship today**. Scoring it would let a

@@ -24,15 +24,21 @@ team can defend in a meeting.
 *Upside* scores how much of the measured gain this particular app can actually capture. An app can be
 ready to upgrade and have nothing to gain, and the report says so when that is the answer.
 
-### Use it without installing anything
+### Use it once, nothing to install
 
-Point any agent that can read a URL at it:
+Paste this into any coding agent that has a shell:
 
 ```
-Read https://skills.horus.com.uy/coreclr-fit and score this project
+Download https://skills.horus.com.uy/coreclr-fit with curl, not with your web fetch
+tool, because I need the raw file and not a summary of it. Save it as
+coreclr-fit-skill.md, read the whole thing, then follow it to score this project.
 ```
 
-Works in Claude Code, Cursor, Codex and GitHub Copilot.
+**The "with curl" part is not decoration.** Some agents fetch a page and hand the model a summary of it
+rather than the page. This skill does not survive that: the report contains blocks that have to be
+reproduced exactly, a 72-column score card, a severity legend, a baseline paragraph and a sign-off, and a
+summary keeps the rules and drops all of them. The scores come out right and the report is a different
+document. Going through a file on disk removes the question.
 
 ### Or install it
 
@@ -46,6 +52,11 @@ Or as a plugin marketplace:
 ```bash
 claude plugin marketplace add HorusSoftwareUY/agent-skills
 ```
+
+Same file either way. Installing just means the team has it and it triggers on its own when someone asks
+whether the upgrade is worth it.
+
+Works in Claude Code, Cursor, Codex and GitHub Copilot.
 
 ### Which model to run it on
 
