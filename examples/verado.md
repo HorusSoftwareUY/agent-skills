@@ -15,7 +15,7 @@
 │                                                                      │
 │  Build & TFM            ███████░░░  36/50   net9.0 · 32-bit RIDs     │
 │  XAML toolchain         ████████░░  17/20   6 of 38 bare             │
-│  Dependencies           ███████░░░  20/30   1 Xamarin-era plugin     │
+│  Dependencies           ███████░░░  20/30   1 package behind · pins  │
 │                                                                      │
 │  ✖ Breaks the build: none          After the fix list: 73 → 100      │
 │  ── 6 of 34 candidates verified · SDK 9.0.304 · net9.0-android35.0   │
@@ -64,7 +64,7 @@ What passed: `SupportedOSPlatformVersion` is already 24.0, `global.json` pins th
 
 | Finding | `file:line` | Pts |
 |---|---|---|
-| `Xam.Plugin.Media` 5.0.1 | `Directory.Packages.props:19` | −6 |
+| `Xam.Plugin.Media` 5.0.1 — ships `monoandroid81` and `xamarin.ios10` assets only, no .NET TFM at all | `Directory.Packages.props:19` | −6 |
 | AndroidX pinned to explicit versions | `Directory.Packages.props:24-27` | −2 |
 | MAUI pinned per csproj | `Verado.App.csproj:26`, `Verado.Core.csproj:8` | −2 |
 

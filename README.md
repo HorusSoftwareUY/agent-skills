@@ -61,7 +61,7 @@ Works in Claude Code, Cursor, Codex and GitHub Copilot.
 ### Which model to run it on
 
 Run it on the most capable model you have access to. This skill asks for a long chain of work on a whole
-repository: evaluating the build, searching 27 patterns, opening each candidate before scoring it, and
+repository: evaluating the build, searching 28 patterns, opening each candidate before scoring it, and
 then reproducing a fixed report structure. Smaller and faster models do the analysis, but they are more
 likely to verify fewer candidates or leave a section thin.
 
@@ -78,15 +78,15 @@ A `coreclr-fit.md` written at the solution root, and a card printed in the conve
 │  CoreCLR fit · Verado                                                │
 │                                                                      │
 │  Readiness   ███████████████░░░░░  73/100  upgrade on your schedule  │
-│  Upside      █████████░░░░░░░░░░░  MEDIUM  up to 44% less time on    │
+│  Upside      ███████░░░░░░░░░░░░░  LOW     up to 44% less time on    │
 │                                            catalog lists             │
 │                                                                      │
-│  → Worth doing. Don't sell it internally as "the app gets            │
-│    faster" — three screens get faster.                               │
+│  → Ready, and it will not pay you much. Three catalog screens        │
+│    get faster; the rest of the app measured ≈ 1×.                    │
 │                                                                      │
 │  Build & TFM            ███████░░░  36/50   net9.0 · 32-bit RIDs     │
 │  XAML toolchain         ████████░░  17/20   6 of 38 bare             │
-│  Dependencies           ███████░░░  20/30   1 Xamarin-era plugin     │
+│  Dependencies           ███████░░░  20/30   1 package behind · pins  │
 │                                                                      │
 │  ✖ Breaks the build: none          After the fix list: 73 → 100      │
 └──────────────────────────────────────────────────────────────────────┘
@@ -116,8 +116,12 @@ the report and then ask it to apply the fixes, that is a separate step you ask f
 
 ---
 
+## Who made this
+
+[Horus Studio](https://horus.com.uy), a software company in Uruguay. We have shipped
+mobile apps in this stack since Xamarin, and performance is the part we care most
+about, which is why this skill exists at all.
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
-
-Built by [Horus Studio](https://horus.com.uy), a .NET MAUI consultancy in Uruguay.
