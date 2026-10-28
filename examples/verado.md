@@ -7,11 +7,11 @@
 │  CoreCLR fit · Verado                                                │
 │                                                                      │
 │  Readiness   ███████████████░░░░░  73/100  upgrade on your schedule  │
-│  Upside      █████████░░░░░░░░░░░  MEDIUM  up to 44% less time on    │
+│  Upside      ███████░░░░░░░░░░░░░  LOW     up to 44% less time on    │
 │                                            catalog lists             │
 │                                                                      │
-│  → Worth doing. Don't sell it internally as "the app gets            │
-│    faster" — three screens get faster.                               │
+│  → Ready, and it will not pay you much. Three catalog screens        │
+│    get faster; the rest of the app measured ≈ 1×.                    │
 │                                                                      │
 │  Build & TFM            ███████░░░  36/50   net9.0 · 32-bit RIDs     │
 │  XAML toolchain         ████████░░  17/20   6 of 38 bare             │
@@ -68,17 +68,20 @@ What passed: `SupportedOSPlatformVersion` is already 24.0, `global.json` pins th
 | AndroidX pinned to explicit versions | `Directory.Packages.props:24-27` | −2 |
 | MAUI pinned per csproj | `Verado.App.csproj:26`, `Verado.Core.csproj:8` | −2 |
 
-## 3 · Upside by signal — 46 / 100 · MEDIUM
+## 3 · Upside by signal — 34 / 100 · LOW
 
 | Signal | Earned | The count behind it |
 |---|---|---|
-| CPU-bound work on the critical path | **20 / 45** | 24 LINQ call sites, **11 on paths the user waits for** and all eleven inside the three catalog view models. The other 13 are startup configuration and tests, and do not count |
+| CPU-bound work on the critical path | **12 / 45** | 24 LINQ call sites, **11 on paths the user waits for** and all eleven inside the three catalog view models. The other 13 are startup configuration and tests, and do not count. 11 verified hits selects the `6 to 25` band; no date parsing or string building anywhere, and no step down, because 12 is the floor |
 | Serialization that can use STJ source-gen | **12 / 25** | STJ without a context. 9 DTOs, none with custom converters. Half points: mechanical to add |
-| Session length | **8 / 18** | Retail browsing, seconds at a time, then the OS kills it |
+| Session length | **4 / 18** | Retail browsing, seconds at a time, then the OS kills it. Short |
 | Android reach | **6 / 12** | Roughly half the installs, answered at step 3 |
 
-**This is why the band is MEDIUM and the report says so plainly.** The work is real but narrow, and the
-session pattern means most users never reach the steady-state number at all.
+**This is why the band is LOW, and saying so is the point.** The work is real but narrow: eleven call
+sites in three view models, over catalog pages of tens of items, in sessions that die before tier-1 ever
+warms up. Verado can move to .NET 11 whenever it likes and should not expect the move to pay for itself
+— *ready, and it will not pay you* is the sentence nobody else writes for them, and it is worth more
+here than a number that flatters the upgrade.
 
 **Absent axes:** the Android reach row is Android-only by construction, so the iOS half of this product
 has a structurally lower ceiling than the band suggests.

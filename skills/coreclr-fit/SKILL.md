@@ -548,16 +548,20 @@ counting it.
 | Verified hits on waiting paths | Pts |
 |---|---|
 | none — the screens are layout and native handlers | 0 |
-| 1 to 25 | 12 |
+| 1 to 5 | 4 |
+| 6 to 25 | 12 |
 | 26 to 100 | 25 |
 | 101 to 300 | 34 |
 | more than 300 | 45 |
 
 > **Then take one step down when the collections are small** — tens to low hundreds of items: API pages,
 > pickers, settings lists, a cart. The measured gains came from shaping real lists, and an app that runs
-> `Select` three hundred times over twelve items each is not the app those figures describe. There is no
-> step up: the top band already assumes volume. Say in the report which band the count selected **and
-> whether the step down was applied**, so the reader can check both.
+> `Select` three hundred times over twelve items each is not the app those figures describe.
+>
+> Two limits on that step. **There is no step up** — the top band already assumes volume. And **it never
+> takes a repo with real hits down to 0**: the floor is the `1 to 5` band, because "no gain at all" is a
+> claim about an app with nothing on its waiting paths, not about one with small lists. Say in the report
+> which band the count selected **and whether the step down was applied**, so the reader can check both.
 
 `Serialization` — **25** when STJ with a `JsonSerializerContext` is already in place · **12** when it is
 STJ without a context, or Newtonsoft over your own models · **2** when serialization is incidental
