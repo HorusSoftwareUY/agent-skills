@@ -812,6 +812,9 @@ if they are the same document with different values in it.
 ````markdown
 # CoreCLR fit: {app} ({their TFM} → .NET 11)
 
+## Summary
+{four short paragraphs, no technical vocabulary · rules below}
+
 {score card — geometry below}
 
 {headline: one sentence, the decision they came for}
@@ -938,6 +941,31 @@ bars stay comparable.
 │     skills.horus.com.uy/coreclr-fit                                  │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+##### The summary · four paragraphs, no jargon
+
+The report opens with it because the person who decides whether this work happens is usually not the
+person who reads the rest. Four short paragraphs, in this order, **each derived from a section further
+down and never from fresh analysis**:
+
+1. **Can they do it** — the verdict, plus the one thing standing in the way if there is one.
+2. **Is it worth it** — what gets faster and what does not, in the app's own terms: screens, lists,
+   searches. Never a multiplier, never a TFM.
+3. **What the work is** — the fix list's scope in items and files, and how much of it pays off even if
+   they never upgrade.
+4. **What happens if they wait** — the LTS date, so the decision reads as planning rather than an alarm.
+
+**No technical vocabulary at all.** No TFM, no package name, no error code, no file extension, no
+`file:line`, no severity mark. If a sentence needs one of those to make sense, it belongs further down.
+
+**No percentage without its condition in the same sentence.** This is the block that gets pasted into an
+email and quoted on its own, and a number that travels without its scope gets disproved by the first
+person with a stopwatch.
+
+**No durations**, the same rule the fix list follows. Items and files, never days.
+
+**Nothing here that is not already below.** If the summary says it, a section further down proves it. A
+summary that can say something the report cannot is how the two start to disagree.
+
 **Every number on that card has to be reconstructible from the rules.** Each dimension line names the
 deductions behind it and they have to add up: `43/50` is `net9` at −7 and nothing else; `10/20` is the
 element-form binding at −7 plus partial `x:DataType` coverage at −3; `18/30` is two Xamarin-era packages
@@ -968,7 +996,8 @@ number — it turns the report into a plan with a finish line:
 
 | # | Section | What it must contain |
 |---|---|---|
-| 1 | **Headline** | One sentence: the gate if one fired, otherwise the relationship between the two axes — *ready but no payoff* / *worth the prep* / *do it now*. This is the decision they came for |
+| 0 | **Summary** | Four short paragraphs with no technical vocabulary, each one derived from a section below. Rules above |
+| 1 | **Headline** | The technical half of what the summary just said in plain language, so **it must not repeat it**: not *what* the verdict is but *why* it holds — which parts of the app carry the gain, which do not, and the sentence that keeps someone from overselling it internally. When a gate fired, name the gate here |
 | 2 | **What breaks the build** | Only if something does. Structure below |
 | 3 | **What was analyzed** | csproj, TFM, the SDK that evaluated it and whether its major matches the TFM, file counts, whether values were **evaluated or read**, and every assumption taken when nobody answered step 3 |
 | 4 | **Blockers** | Only if a gate fired |
@@ -1091,6 +1120,13 @@ nothing compiles until it is fixed, *"this view is used on 4 pages"* when the da
 what justifies the order, and it is the same discipline as the fix list's scope line: counted from
 their repo, never a duration.
 
+**A `✖` is earned by naming the error, and the `Error` row is the one that cannot be skipped.** If you
+cannot say which code the compiler emits, you do not know that the build fails — you are predicting it,
+and the mark that means *stop everything on Monday* is not the place to guess. Score it `◐` instead, say
+plainly that it is expected to break and has not been confirmed, and it costs the same points either way.
+A runtime crash is the same: it belongs here only with a reproduction attached. The day someone compiles
+it and brings back the code, the finding earns its `✖` and the rules below take over on their own.
+
 Per block, the fields that actually differ; skip a row when it adds nothing:
 
 ```
@@ -1113,6 +1149,12 @@ either runs as-is or costs upside. Readers need to know where the cliff ends.
 
 > **`✖` means the build fails** — not that a screen crashes in the field. A runtime break belongs here
 > only with a reproduction attached.
+
+**One number, three places.** The count on the card is the number of `✖` items in the fix list, and each
+of those has its block in this section. If the card says `none`, there is no `✖` anywhere in the report.
+The three are written at different moments and nothing reconciles them afterwards, which is exactly how
+a report ends up saying *nothing breaks* at the top and *this breaks* further down — and the reader who
+spots it stops trusting the rest of the file, which is the correct response.
 
 #### Projected gains — the evidence, and how to present it
 
@@ -1263,6 +1305,8 @@ Check these against the file you just wrote, not against your intention to write
 that has actually gone missing from a real run.
 
 ```
+[ ] Summary present, four paragraphs, nothing in it that is not proved below
+[ ] Summary carries no TFM, package name, error code, file extension or duration
 [ ] Score card present, 72 characters wide, every line padded, both bars 20 chars
 [ ] Both axes carry their caption
 [ ] Every section of the skeleton is there, in order, none added
@@ -1277,6 +1321,8 @@ that has actually gone missing from a real run.
 [ ] Preview notes names the agent and model, and carries the mid-tier warning if it applies
 [ ] Anything that made this run partial is stated — unanswered questions, rules that could not
     be checked, candidates scored without opening the file
+[ ] The card's build-break count equals the number of ✖ items, each with its block
+[ ] Every ✖ names the compiler error it produces, or it is not a ✖
 [ ] Badge colour matches the score band
 [ ] The last thing in the file is the sign-off block, verbatim
 ```

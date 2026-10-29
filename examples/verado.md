@@ -1,6 +1,19 @@
-> **Calibration run, regenerated 16-oct-2026** against the current `SKILL.md`. Fictional project.
+> **Calibration run, regenerated 29-oct-2026** against the current `SKILL.md`. Fictional project.
 > This is the case the skill exists for: **nothing blocks, and the payoff is partial.** A report that
 > only ever said "migrate" would be worthless here.
+
+## Summary
+
+Verado can move to .NET 11 whenever the team chooses. The one thing that has to change first is a build
+setting, not code.
+
+The speed gain is narrow. Three catalog screens get noticeably faster; the rest of the app stays roughly
+as it is today.
+
+The work is six items across six files, most of it configuration rather than code. Three of them pay off
+whether or not you upgrade.
+
+Staying on .NET 10 is supported until 14 November 2028, so this is a planning decision, not an urgent one.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -24,11 +37,10 @@
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Worth doing, on your own schedule.** Nothing in Verado stops a `net11` build. But the gain is
-concentrated in three catalog screens, and the rest of the app is layout and native handlers, where the
-runtime measured ≈ 1×. The honest internal pitch is *"three screens get faster"*, not *"the app gets
-faster"* — and the difference matters, because the second one gets disproved the first time someone
-opens the settings screen with a stopwatch.
+**The gain is concentrated in three catalog screens**, and the rest of the app is layout and native
+handlers, where the runtime measured ≈ 1×. The honest internal pitch is *"three screens get faster"*,
+not *"the app gets faster"* — and the difference matters, because the second one gets disproved the
+first time someone opens the settings screen with a stopwatch.
 
 `✖` breaks the build · `◐` blocks the gain · `○` runs as-is
 
@@ -110,8 +122,8 @@ has a structurally lower ceiling than the band suggests.
 ```
 *Scope: 1 file · 2 TFMs, plus the workload bump.*
 
-**2 · ✖ Drop the 32-bit RIDs (+7)** — CoreCLR on Android is 64-bit only; there is no configuration
-around it.
+**2 · ◐ Drop the 32-bit RIDs (+7)** — CoreCLR on Android is 64-bit only; there is no configuration
+around it. Expected to stop the build and not confirmed against a compiler, so it does not carry the build-break mark.
 ```xml
 <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
 ```
