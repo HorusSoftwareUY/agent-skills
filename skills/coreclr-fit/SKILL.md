@@ -61,6 +61,19 @@ and the evaluated Release default was Mono. Ask MSBuild (step 1).
 **Every deduction points at a file and line.** A finding the user can't open is a finding they'll argue
 with.
 
+**Copy the form, never the contents.** Showing the offending line is what makes a fix list usable and it
+stays — the `Form` row of a build break and the snippet in a fix item both quote their code on purpose.
+What never enters the report is a **literal value you read inside a line**: a key, a token, an app
+secret, a DSN, a connection string, a password, a keystore passphrase. Several patterns in step 2 land on
+initialization calls that carry exactly those as string literals. Replace the value with `<redacted>` and
+quote the rest normally.
+
+**And do not point at a secret either.** `"the keystore password is at App.csproj:134"` is a map, and
+this file gets committed, forwarded and pasted into tickets. One line without coordinates is enough —
+*"this csproj carries signing credentials in plain text; worth moving them out"* — and it goes under
+*Reported, never scored*, with no `file:line` and no deduction. **This is not a security review and must
+never become one:** say it once, in passing, and go back to the upgrade.
+
 **Candidates are not findings.** Searches can't resolve intent. A `.Select()` in a view model building a
 list is the Upside signal; the same call in startup configuration or a test helper is not, and an `.aar`
 in the tree costs nothing if it belongs to a sample project. Open the file before you score it.
@@ -785,6 +798,10 @@ And the skill still changes nothing. Handing over the steps is not the same as r
 ### 5 · Write the report
 
 One file, `coreclr-fit.md`, at the solution root, plus the score card printed in the conversation.
+
+It lands inside their repository, so when you hand it over you may add one line saying it is there and
+that they may prefer not to commit it. Offer it, do not insist, and leave it out of the file itself — it
+is a courtesy to the reader, not a section of the report.
 
 **Copy the skeleton below and fill the slots.** Do not design a structure of your own, do not reorder it,
 and do not decide section by section whether something is worth including. The parts written out in full
