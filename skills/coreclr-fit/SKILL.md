@@ -128,6 +128,9 @@ will not pay you"* is the sentence nobody else will write for them.
 
 ## Workflow
 
+**This workflow has one stop: step 3.** Steps 0 to 2 read the repo, step 3 asks the person what the repo
+cannot tell you and ends your turn, and steps 4 and 5 run on their answers.
+
 ### 0 · Scope
 
 The app project is the `.csproj` with MAUI TFMs and `<OutputType>Exe</OutputType>`. That marker is read
@@ -271,25 +274,51 @@ that note from a warning to a credit. A `net11.0-*` TFM already sitting next to 
 startup marker already in the code, are what decide the measurability paragraph: both present means they
 can A/B today, and neither is worth points either way.
 
-### 3 · Ask what the search can't know
+### 3 · Ask what the search can't know · this is a stop
 
-Only the questions that change the verdict, asked together — seven lines in one message, not an interview:
+**Send the questions and end your turn.** Do not score, do not write the report, and do not "assume for
+now and adjust later". A report built on guesses gets read as a verdict, and the 32-bit question alone
+can turn a clean upgrade into a blocked one. Scoring starts when they answer, or when they tell you to go
+ahead without answers.
 
-| Ask | What it decides | If nobody answers |
-|---|---|---|
-| Must you ship 32-bit Android (armeabi-v7a / x86)? Does any native dependency lack arm64? | **Gate G1** | Assume **no**. Assuming yes would return "Blocked" on every unattended run, which is the one wrong answer that costs them the whole report |
-| Can Android `minSdk` go to 24? | **Gate G2**, or a −3 in D1 if it can | Assume **it can**, and say the deduction is provisional |
-| Are you on `Full` trimming (`AndroidLinkMode=Full` / `TrimMode=full`), and has a Release build been validated on a device? | The **tone** of the `Full` trimming note, not whether it appears | Assume `SdkOnly` and never validated, which is both the common case and the milder claim |
-| What share of your installs is Android vs iOS? | The **Android reach** row of Upside (0–12), which is a share of users, not of TFMs — the csproj says both platforms exist, never which one the product lives on | Split it evenly across the platform TFMs and say you did |
-| Is the pain startup, or throughput once the app is running? | **Which projection to cite** | Assume throughput: it is where the measured gains are |
-| Are sessions short (seconds, then killed) or long? | The **session length** row of Upside (0–18) | Assume short, which scores lower |
-| Is this a production app, or a sample/demo? | How the **measurability** paragraph reads — a production app that cannot A/B should be told so plainly; nobody A/Bs a demo. Never points, either way | Assume production, which is the reading that owes them more |
+Every run reaches this point with enough data to keep going, and that is exactly why it has to be a stop:
+the defaults further down make it possible to finish without anyone, and a run that finishes on its own
+has quietly swapped the person's answers for your guesses.
 
-**Ask first, and ask twice before assuming.** The defaults above exist for the run nobody is watching,
-not as a shortcut past a conversation — every one of them is a guess at something only they know. If the
-first message goes unanswered, say plainly that these seven answers change the verdict and ask again.
+**Ask only what the search left open**, in one message, one line per question, not an interview. Drop a
+question the repo already answered and say so in one line: `minSdk` already at 24 or higher settles G2;
+no 32-bit RID in the evaluated build *and* every native dependency verified on arm64 settles G1; an
+evaluated `AndroidLinkMode` settles the first half of the trimming question, not the second. When the
+person never wrote a word of their own (see *Language*), add one line asking which language they want the
+report in.
 
-Only then fall back to the defaults, and when you do, mark them as what they are. In the report, under
+| Ask | What it decides |
+|---|---|
+| Must you ship 32-bit Android (armeabi-v7a / x86)? Does any native dependency lack arm64? | **Gate G1** |
+| Can Android `minSdk` go to 24? | **Gate G2**, or a −3 in D1 if it can |
+| Are you on `Full` trimming (`AndroidLinkMode=Full` / `TrimMode=full`), and has a Release build been validated on a device? | The **tone** of the `Full` trimming note, not whether it appears |
+| What share of your installs is Android vs iOS? | The **Android reach** row of Upside (0–12), which is a share of users, not of TFMs — the csproj says both platforms exist, never which one the product lives on |
+| Is the pain startup, or throughput once the app is running? | **Which projection to cite** |
+| Are sessions short (seconds, then killed) or long? | The **session length** row of Upside (0–18) |
+| Is this a production app, or a sample/demo? | How the **measurability** paragraph reads — a production app that cannot A/B should be told so plainly; nobody A/Bs a demo. Never points, either way |
+
+If they answer some and skip others, ask once more for the ones still open, saying plainly that they move
+the verdict. "Go ahead", "just use defaults" or "I don't know" is an answer: take it and move on.
+
+**Only if nobody can answer at all** — a CI job, an agent started by another agent with no person behind
+it — use these defaults. Not because the run is long, not because the questions feel like friction:
+
+| Question | Default when nobody can answer |
+|---|---|
+| 32-bit Android | Assume **no**. Assuming yes would return "Blocked" on every unattended run, which is the one wrong answer that costs them the whole report |
+| `minSdk` 24 | Assume **it can**, and say the deduction is provisional |
+| `Full` trimming | Assume `SdkOnly` and never validated, which is both the common case and the milder claim |
+| Android vs iOS share | Split it evenly across the platform TFMs and say you did |
+| Startup or throughput | Assume throughput: it is where the measured gains are |
+| Session length | Assume short, which scores lower |
+| Production or demo | Assume production, which is the reading that owes them more |
+
+When you fall back to them, mark them as what they are. In the report, under
 *What was analyzed*, write the assumptions under a heading that says they were **taken automatically**,
 and close with: *"Nobody answered these, so they were assumed. If any of them is wrong the verdict moves
 — the 32-bit question alone can turn this into a blocked upgrade. Worth one re-run with someone
@@ -1084,9 +1113,14 @@ affected, which is the whole relationship this report describes.
 
 ##### Language
 
-**Write the report in the language the person wrote to you in.** Spanish in, Spanish out; Portuguese,
-German, French, Japanese, the same. English is the fallback for when you genuinely cannot tell, which is
-rare — one message is usually enough. Infer it, don't ask.
+**Write the report in the language you and the person are working in.** Spanish in, Spanish out;
+Portuguese, German, French, Japanese, the same. Infer it, from their own words.
+
+**A pasted request is not their words.** The prompt on the skill's page is in English for everyone, so a
+conversation that opens with it tells you nothing about the person yet. Look past it: what they wrote
+before or after the paste, the conversation so far, and their instructions files (`CLAUDE.md`,
+`AGENTS.md`, `.github/copilot-instructions.md`), whose language is the language they work in. If none of
+that exists, ask in step 3, one line. English is the fallback only when they skipped that line too.
 
 Two things override that, and neither is a guess: **they asked for another language** (*"this goes to our
 US client"* is such a request even if it does not sound like one), or **they want the chat in one
@@ -1101,8 +1135,15 @@ paths, `file:line`, error codes like `MAUIX2002`, every snippet) and **the sign-
 **Everything else translates, including the vocabulary.** A reader who has to decode `Upside` before
 reading their own report is one the report lost.
 
+**One language per report, card included.** The card's labels are text like any other: the two axes, the
+three dimension names, `Breaks the build`, `After the fix list`, `candidates verified`, the band words.
+The list below covers the terms that need a decision, not every word that translates. A card that says
+*Preparación* on one line and *Build & TFM* on the next reads as two documents stitched together. Section
+headings translate too.
+
 - `Readiness` → *Preparación* · `Upside` → *Ganancia*. **Gloss the English once** on first use — *"Preparación (Readiness)"* — then use the translation.
 - `LOW` / `MEDIUM` / `HIGH` → *BAJA* / *MEDIA* / *ALTA*.
+- On the card, `Breaks the build` → *Rompe el build* and `After the fix list` → *Después de los arreglos*.
 - `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is` — translate the words, **never the symbols**. `✖ ◐ ○` are what make the list scan.
 - `measured` / `inferred` / `not measured` / `observed, cause not isolated` — translate, and keep the four distinct. The distinction is the point, not the English.
 
