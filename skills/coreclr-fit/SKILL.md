@@ -310,7 +310,7 @@ between them — and both gates are Android-only too. An iOS-only project theref
 on D1 and can never come back "Blocked", not because it is in better shape but because most of the table
 cannot reach it.
 
-**The scale is not renormalised for this.** The card and the badge exist to be compared against another
+**The scale is not renormalised for this.** The card exists to be compared against another
 project's, and a score computed on a different denominator in each report destroys exactly that. Declare
 it instead. One Android TFM is enough for the rules to be live, so this applies only to a project with no
 Android leg at all, and then the dimension's section says so in full:
@@ -797,7 +797,13 @@ And the skill still changes nothing. Handing over the steps is not the same as r
 
 ### 5 · Write the report
 
-One file, `coreclr-fit.md`, at the solution root, plus the score card printed in the conversation.
+One file, `coreclr-fit.md`, at the solution root.
+
+**What you print in the conversation is the summary and then the card, in that order** — the same order
+the report itself opens with, so the person who read it in the chat and the person who opens the file
+later are reading the same document. The summary first, because it is the part that answers them without
+a glossary; the card second, because it is what they will screenshot. Then one line saying where the
+file is. Nothing else: the sections below are what the file is for.
 
 It lands inside their repository, so when you hand it over you may add one line saying it is there and
 that they may prefer not to commit it. Offer it, do not insist, and leave it out of the file itself — it
@@ -872,20 +878,14 @@ if they are the same document with different values in it.
 > *These figures come from the `coreclr-fit v1` evidence set, measured on .NET 11 preview 5. They are
 > re-measured when the runtime changes; the current set is always at skills.horus.com.uy/coreclr-fit.*
 
-## Badge
-
-```markdown
-![CoreCLR readiness](https://img.shields.io/badge/CoreCLR_readiness-{score}%25-{colour})
-```
-
 ---
 
 ```
    ▄██▀▀██▄
  ▄█▀   ██▀  ▄     h o r u s   s t u d i o .
 ██  ▄▄▄   ▄███
-██ ██▀██▄██ ██    CoreCLR fit · built from a real Mono → CoreCLR
-███▀   ▀▀▀  ██    upgrade on .NET 11, measured on device
+██ ██▀██▄██ ██    CoreCLR fit · numbers from an upgrade we ran
+███▀   ▀▀▀  ██    ourselves on .NET 11, measured on two phones
  ▀  ▄██   ▄█▀     Need a hand with this? horus.com.uy/contact
    ▀██▄▄██▀       skills.horus.com.uy/coreclr-fit
 ```
@@ -1009,12 +1009,6 @@ number — it turns the report into a plan with a finish line:
 | 9b | **What happens if you do nothing** | Only when it is a real option. Almost always it is: .NET 10 is LTS, so moving there instead gets them back into support, keeps Mono and costs a fraction of this fix list. Say what they give up — the runtime gains and, on Android, the MIBC profile — and what they keep, which is every `○` finding, because that work pays on whatever they ship. **This is the section that makes the rest credible.** A report that never names the cheaper option reads as a sales document, and the reader knows it |
 | 10 | **Upgrade steps** | Only the snippets that apply to this repo, with their names in them |
 | 11 | **Preview notes** | What to re-check at GA, the LTS runway so nothing reads as urgent, then the version line |
-| 12 | **Badge** | Pasteable into their README; it is also how the report travels |
-
-**The badge colour carries the verdict, so pick it from the score** — `brightgreen` 85–100 · `green`
-70–84 · `yellow` 50–69 · `orange` 30–49 · `red` below 30, and `lightgrey` when a gate fired, because a
-blocked project has no score worth colouring. A badge that is always the same colour tells the next
-reader nothing.
 
 **Say that the numbers are versioned, never what is coming next.** A report that promises a measurement
 is still in circulation if that measurement never happens, and the backlog is ours, not theirs. Where an
@@ -1042,6 +1036,27 @@ not.** The subject of a gain projection is code, which this skill can read; the 
 is people, which it cannot see. If a size band is unavoidable, say **hours / days / weeks** and never a
 decimal — `0.25d` claims two-hour accuracy on work nobody has scoped.
 
+##### Voice
+
+**Write to them, not about them.** The report is for the people whose repo this is, so address them:
+*you*, *your app*, *your TFM*. Third person turns a report written for someone into a report written
+about them, which reads as a document that reached them by accident.
+
+What stays as it is:
+
+- **First person for what we did.** *"We did not measure this"* · *"we assumed you don't need
+  armeabi-v7a"*. It is what makes clear who is answerable for each claim: we assume, you decide.
+- **Third person for actual third parties.** The trimmer, the OS, the compiler, QA, Microsoft. Those
+  are not the reader.
+- **Section headings**, which are fixed by the output contract and do not bend to voice.
+- **`the user`, when it means the people who use *their* app.** This one inverts the meaning if you
+  get it wrong: *"11 call sites on paths the user waits for"* becomes *"paths your users wait for"*,
+  never *"paths you wait for"* — nobody on the team is waiting for that screen, their customers are.
+
+Prefer active voice and contractions, and keep sentences short. *"It is assumed they do not need
+armeabi-v7a"* has no owner; *"we assumed you don't need armeabi-v7a"* says who assumed and who is
+affected, which is the whole relationship this report describes.
+
 ##### Language
 
 **Write the report in the language the person wrote to you in.** Spanish in, Spanish out; Portuguese,
@@ -1056,8 +1071,7 @@ hand the report over, because this file gets committed and forwarded, and the pe
 often not its last reader.
 
 **What never translates:** identifiers and code (property names, type names, MSBuild properties, file
-paths, `file:line`, error codes like `MAUIX2002`, every snippet), **the badge**, and **the sign-off
-block**.
+paths, `file:line`, error codes like `MAUIX2002`, every snippet) and **the sign-off block**.
 
 **Everything else translates, including the vocabulary.** A reader who has to decode `Upside` before
 reading their own report is one the report lost.
@@ -1323,7 +1337,6 @@ that has actually gone missing from a real run.
     be checked, candidates scored without opening the file
 [ ] The card's build-break count equals the number of ✖ items, each with its block
 [ ] Every ✖ names the compiler error it produces, or it is not a ✖
-[ ] Badge colour matches the score band
 [ ] The last thing in the file is the sign-off block, verbatim
 ```
 
