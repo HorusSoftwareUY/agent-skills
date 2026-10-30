@@ -58,7 +58,7 @@ the tags.
  ▀  ▄██   ▄█▀
    ▀██▄▄██▀</pre>
     <div class="txt">
-      <p class="mark">horus studio.</p>
+      <p class="mark">horus <span>studio.</span></p>
       <p class="lead">CoreCLR fit, numbers from an upgrade we ran ourselves on .NET 11,
       measured on two phones.</p>
       <p><a href="https://skills.horus.com.uy/coreclr-fit">skills.horus.com.uy/coreclr-fit</a></p>
@@ -268,6 +268,7 @@ hr{ border:0; border-top:1px solid var(--line); margin:7mm 0; }
 .foot .txt p{ margin:0; }
 .foot .txt .mark{ font-size:9.5pt; font-weight:650; color:var(--ink);
                   letter-spacing:.22em; margin-bottom:1.2mm; }
+.foot .txt .mark span{ color:var(--accent); }
 .foot .txt .lead{ color:var(--ink); }
 .foot .txt a{ color:var(--muted); text-decoration:none; }
 ```
