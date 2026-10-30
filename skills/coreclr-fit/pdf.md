@@ -1,6 +1,11 @@
 # coreclr-fit · PDF export
 
-Read this only when someone has the report and asks for a PDF. It is not part of the analysis, and
+Read this only when someone has the report and asks for a PDF.
+
+**Check you have all of it first.** The last line of this file reads **End of pdf.md · `coreclr-fit v1`**.
+If what you are holding does not end there, you have a summary of it, and the part you are missing is the
+stylesheet — which means the page you build will be unstyled, which is worse than no PDF. The file is at
+`skills.horus.com.uy/coreclr-fit/pdf.md`, and a copy saved to disk with `curl` is never summarised. It is not part of the analysis, and
 nothing here changes what the report says.
 
 **The PDF is the same report, typeset.** Same sections, same numbers, same wording. You are not
@@ -45,8 +50,15 @@ the tags.
   {the rest of the report, as HTML, starting at the bold paragraph that sits under the
    ASCII card — the one that says why the verdict holds — and running to the end}
   <div class="foot">
-    <img class="logo" alt="Horus Studio" src="data:image/png;base64,{the logo}">
+    <pre class="glyph">   ▄██▀▀██▄
+ ▄█▀   ██▀  ▄
+██  ▄▄▄   ▄███
+██ ██▀██▄██ ██
+███▀   ▀▀▀  ██
+ ▀  ▄██   ▄█▀
+   ▀██▄▄██▀</pre>
     <div class="txt">
+      <p class="mark">horus studio.</p>
       <p class="lead">CoreCLR fit, numbers from an upgrade we ran ourselves on .NET 11,
       measured on two phones.</p>
       <p><a href="https://skills.horus.com.uy/coreclr-fit">skills.horus.com.uy/coreclr-fit</a></p>
@@ -82,16 +94,13 @@ whether anything is in the row, not whether everything is.
 **`{app}` is the app's name as the report writes it, spaces and all.** It goes into the `<h1>` and the
 `<title>` exactly like that. Only the PDF filename in § 5 needs it flattened.
 
-**The logo is `logo.png`, in the same folder as this file.** If you are reading this as a local file,
-it is beside it; a plugin install brings the whole folder. If you fetched this over HTTP there is no
-"beside", so take it from
-`https://raw.githubusercontent.com/HorusSoftwareUY/agent-skills/main/skills/coreclr-fit/logo.png`.
-Download it to a temporary path, inline it as base64, and delete the copy: a stray `logo.png` next to
-their report is one more thing for them to notice and wonder about. Inlining is not only so the file
-works offline. A remote `<img>` means
-our server learns every time someone opens this document, and from where. A report about a client's code
-has no business telling us when they read it. If you cannot get the logo at all, drop the `<img>` and
-keep the footer text: a missing logo is better than a broken one.
+**The mark is the same ASCII glyph the report signs off with**, copied character for character out of
+the sign-off block you are removing from the body. Nothing is downloaded and nothing is embedded: it is
+seven lines of text in a `<pre>`, coloured with CSS.
+
+That is also why it is the right mark here. This document came out of a terminal, and carrying the same
+glyph the console and the markdown report carry makes the three obviously one thing. The half-block
+characters need a line-height near 1.0 or they stretch, which is the one thing to get right.
 
 **Nothing else in the page reaches the network either.** No fonts, no stylesheets, no analytics. The
 HTML and the PDF stay on their machine.
@@ -252,9 +261,13 @@ hr{ border:0; border-top:1px solid var(--line); margin:7mm 0; }
 
 .foot{ margin-top:11mm; padding-top:4mm; border-top:1px solid var(--line);
        display:flex; align-items:center; gap:7mm; break-inside:avoid; }
-.foot .logo{ width:32mm; height:auto; flex:none; }
+.foot .glyph{ font:7.5pt/1.0 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+              color:var(--accent); margin:0; white-space:pre; flex:none;
+              background:none; border:0; padding:0; }
 .foot .txt{ font-size:8.5pt; line-height:1.65; color:var(--muted); }
 .foot .txt p{ margin:0; }
+.foot .txt .mark{ font-size:9.5pt; font-weight:650; color:var(--ink);
+                  letter-spacing:.22em; margin-bottom:1.2mm; }
 .foot .txt .lead{ color:var(--ink); }
 .foot .txt a{ color:var(--muted); text-decoration:none; }
 ```
@@ -339,3 +352,7 @@ the file is worse than no checklist, because it ends the review.
 this skill will not install. So check the HTML, which is the same document, and then say plainly what
 you verified and what you did not — *"I checked the page; I have not opened the PDF"* is the honest
 sentence, and it takes one line.
+
+---
+
+**End of pdf.md · `coreclr-fit v1`**
