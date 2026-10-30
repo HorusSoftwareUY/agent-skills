@@ -981,8 +981,25 @@ is the more credible one.
 
 **Geometry, so two cards line up.** The box is **72 characters wide**, borders included: `┌`/`└` plus 70
 `─`, and every content line is `│` + two spaces + 68 characters of content padded with spaces + `│`.
-Count the padding; do not eyeball it. A card that does not align is the first thing a reader notices and
-the last thing they trust.
+A card that does not align is the first thing a reader notices and the last thing they trust.
+
+**Measure it with a tool, after writing the file and before printing anything.** You cannot count
+padding reliably by reading it, and runs that tried came back one or two columns short on half the lines,
+with the right border zigzagging. So once `coreclr-fit.md` is written, measure every card line with
+whatever the machine has, fix the short or long ones by adding or removing spaces before the closing `│`,
+and measure again until every line is 72:
+
+```bash
+# macOS / Linux
+python3 -c "import sys;[print(i,len(l.rstrip('\n'))) for i,l in enumerate(open('coreclr-fit.md',encoding='utf-8'),1) if l[:1] in '┌│└' and len(l.rstrip('\n'))!=72]"
+```
+```powershell
+# Windows
+Select-String -Path coreclr-fit.md -Pattern '^[┌│└]' -Encoding utf8 | ? { $_.Line.Length -ne 72 } | % { "$($_.LineNumber) $($_.Line.Length)" }
+```
+
+No output means the card is right. Then print the card in the chat **copied from the file**, never
+retyped, so the one you fixed is the one they see.
 
 **Bars come in two lengths, and mixing them breaks the width.** The two axis bars at the top are **20
 characters**, filled = `round(score / 5)`. The three dimension bars below are **10 characters**, filled =
@@ -1403,7 +1420,7 @@ that has actually gone missing from a real run.
 ```
 [ ] Summary present, four paragraphs, nothing in it that is not proved below
 [ ] Summary carries no TFM, package name, error code, file extension or duration
-[ ] Score card present, 72 characters wide, every line padded, both bars 20 chars
+[ ] Score card present, 72 characters wide on every line as measured with a tool, both bars 20 chars
 [ ] Both axes carry their caption
 [ ] Every section of the skeleton is there, in order, none added
 [ ] The three conditional sections are present or genuinely did not apply
