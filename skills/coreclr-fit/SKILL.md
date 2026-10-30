@@ -292,15 +292,27 @@ evaluated `AndroidLinkMode` settles the first half of the trimming question, not
 person never wrote a word of their own (see *Language*), add one line asking which language they want the
 report in.
 
-| Ask | What it decides |
-|---|---|
-| Must you ship 32-bit Android (armeabi-v7a / x86)? Does any native dependency lack arm64? | **Gate G1** |
-| Can Android `minSdk` go to 24? | **Gate G2**, or a −3 in D1 if it can |
-| Are you on `Full` trimming (`AndroidLinkMode=Full` / `TrimMode=full`), and has a Release build been validated on a device? | The **tone** of the `Full` trimming note, not whether it appears |
-| What share of your installs is Android vs iOS? | The **Android reach** row of Upside (0–12), which is a share of users, not of TFMs — the csproj says both platforms exist, never which one the product lives on |
-| Is the pain startup, or throughput once the app is running? | **Which projection to cite** |
-| Are sessions short (seconds, then killed) or long? | The **session length** row of Upside (0–18) |
-| Is this a production app, or a sample/demo? | How the **measurability** paragraph reads — a production app that cannot A/B should be told so plainly; nobody A/Bs a demo. Never points, either way |
+**Give every question its answers.** Put the options in the question, so one word answers it:
+*"Sessions: short or long?"*, never *"Are sessions short or long?"*, which invites a "yes". When you add
+context to a yes/no question, spell both answers out (*"we need 32-bit"* / *"we don't"*) instead of
+leaving a bare yes that could mean either. A run that asked *"Do you need 32-bit? The build doesn't ask
+for it, but confirm"* got a "yes" that meant opposite things, and the opposite things were a clean upgrade
+and a blocked one.
+
+**If your agent can ask multiple-choice questions** (Claude Code's `AskUserQuestion`, for example), use
+it from the first round: every question here has natural options, and a click cannot be ambiguous. That
+tool takes up to four questions at a time, so ask in two rounds, the gate questions first. Without such a
+tool, send a numbered list with the options written into each line.
+
+| Ask | Options | What it decides |
+|---|---|---|
+| Must you ship 32-bit Android (armeabi-v7a / x86)? Does any native dependency lack arm64? | We need 32-bit · We don't | **Gate G1** |
+| Can Android `minSdk` go to 24? | It can go to 24 · It has to stay | **Gate G2**, or a −3 in D1 if it can |
+| Are you on `Full` trimming (`AndroidLinkMode=Full` / `TrimMode=full`), and has a Release build been validated on a device? | Full, validated on a device · Full, never validated · Not on Full | The **tone** of the `Full` trimming note, not whether it appears |
+| What share of your installs is Android vs iOS? | Mostly Android · About half · Mostly iOS · Don't know | The **Android reach** row of Upside (0–12), which is a share of users, not of TFMs — the csproj says both platforms exist, never which one the product lives on |
+| Is the pain startup, or throughput once the app is running? | Startup · Throughput · Both | **Which projection to cite** |
+| Are sessions short (seconds, then killed) or long? | Short, seconds · Long, minutes or hours | The **session length** row of Upside (0–18) |
+| Is this a production app, or a sample/demo? | Production · Sample or demo | How the **measurability** paragraph reads — a production app that cannot A/B should be told so plainly; nobody A/Bs a demo. Never points, either way |
 
 If they answer some and skip others, ask once more for the ones still open, saying plainly that they move
 the verdict. "Go ahead", "just use defaults" or "I don't know" is an answer: take it and move on.
