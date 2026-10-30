@@ -12,8 +12,18 @@ document.
 
 ## 1 · Build the HTML
 
-Write a single self-contained `.html` file next to the report. Everything inline, no external
-requests: the person is going to open this on a plane or forward it to someone behind a firewall.
+Write `coreclr-fit.html` next to the report, self-contained. Everything inline, no external requests:
+the person is going to open this on a plane or forward it to someone behind a firewall.
+
+**You already have the report, so write the HTML, do not convert a file.** You wrote every section a
+moment ago and you still have it: emit the markup directly, the way you would write any page. Treating
+your own output as a document to be parsed is the long way around, and it is where two runs stop looking
+alike.
+
+Only when you genuinely do not have the content — a different session, a report someone handed you —
+convert the file instead, and then `pandoc -f gfm -t html` is the right tool and worth using. The ban on
+pandoc in § 5 is about producing the **PDF**, where a browser does a better job; it says nothing about
+getting markdown into HTML.
 
 ```html
 <!doctype html><html lang="{the report's language}"><meta charset="utf-8">
@@ -22,7 +32,7 @@ requests: the person is going to open this on a plane or forward it to someone b
 <body>
   <div class="head">
     <p class="eyebrow">CoreCLR fit</p>
-    <h1>{app}<span class="tfm">{their TFMs} &nbsp;→&nbsp; .NET 11</span></h1>
+    <h1>{app}<span class="tfm">{every platform TFM, separated by ·} &nbsp;→&nbsp; .NET 11</span></h1>
   </div>
   <div class="summary">{the four paragraphs of § Summary, each in its own <p>}</div>
   {the card, § 2}
@@ -39,13 +49,25 @@ requests: the person is going to open this on a plane or forward it to someone b
 </body></html>
 ```
 
-**Three things come out of the body and do not get repeated.** The `# CoreCLR fit: …` title, because
+**Four things come out of the body and do not get repeated.** The `# CoreCLR fit: …` title, because
 the header carries it. The `## Summary` heading and its paragraphs, because they are already in
-`.summary`. And the ASCII sign-off block at the end, because the footer replaces it — a logo drawn in
-characters makes sense in a terminal and nowhere else.
+`.summary`. The ASCII sign-off block at the end, because the footer replaces it — a logo drawn in
+characters makes sense in a terminal and nowhere else. And the `---` immediately above that sign-off,
+which exists to separate it in a text file; left in, it draws a rule directly above a footer that
+already has a border.
 
-**The logo lives next to this file**, as `logo.png`, if the skill came in as a plugin. If it is not
-there, fetch it from
+**A table whose header row is empty has no header.** Several tables in the report are two-column
+key/value lists written as `| | |`, which is the markdown way of saying "no headings here". Rendered
+faithfully they get an empty grey band on top, because the stylesheet gives `thead th` a background.
+Drop the `<thead>` when every one of its cells is empty and start the table at `<tbody>`. **This is not
+editing the report**: the content of an empty row is nothing, and nothing is what you render.
+
+**`{app}` is the app's name as the report writes it, spaces and all.** It goes into the `<h1>` and the
+`<title>` exactly like that. Only the PDF filename in § 5 needs it flattened.
+
+**The logo is `logo.png`, in the same folder as this file.** If you are reading this as a local file,
+it is beside it; a plugin install brings the whole folder. If you fetched this over HTTP there is no
+"beside", so take it from
 `https://raw.githubusercontent.com/HorusSoftwareUY/agent-skills/main/skills/coreclr-fit/logo.png`.
 Either way, inline it as base64 — and that is not only so the file works offline. A remote `<img>` means
 our server learns every time someone opens this document, and from where. A report about a client's code
@@ -58,7 +80,11 @@ HTML and the PDF stay on their machine.
 ## 2 · The card becomes real bars
 
 The ASCII card does not survive being typeset — it is a monospace drawing that exists because a
-terminal has nothing else. Rebuild it as markup, reading the values off the card you already wrote:
+terminal has nothing else. Rebuild it as markup, reading the values off the card you already wrote.
+
+**The numbers below are from a different report than yours.** They are here to show the shape; every one
+of them has to be replaced. If a value from this block survives into your page, you copied the example
+instead of your own card.
 
 ```html
 <div class="card">
@@ -79,15 +105,25 @@ terminal has nothing else. Rebuild it as markup, reading the values off the card
   </div>
 
   <div class="meta"><b>Breaks the build: {n}</b> &nbsp;·&nbsp; After the fix list: {a} → {b}<br>
-  {the provenance line: candidates verified · SDK · TFM · file counts}</div>
+  {the card's last lines, minus the skill URL: candidates verified · SDK · TFM · file counts ·
+   the version string}</div>
 </div>
 ```
 
-**The bar width is a percentage of the maximum, not of 100.** Readiness and Upside use the score
-itself; a dimension uses `points / maximum × 100`, so `36/50` is `72%` and `20/30` is `67%`. Getting
-this wrong is the one error a reader spots instantly, because the bar and the number sit side by side.
+**The bar width is a percentage of the maximum, not of 100.** Readiness uses its own score. A dimension
+uses `points / maximum × 100`, so a `36/50` renders as `72%` and a `20/30` as `67%`. Getting this wrong
+is the one error a reader spots instantly, because the bar and the number sit side by side.
+
+**Upside is the exception, because its score is not on the card.** The card shows only the band — `LOW`,
+`MEDIUM`, `HIGH` — and that is deliberate: a number invites "percent of what?". The score itself is in
+the heading of the report's Upside section, written as `— 67 / 100 · HIGH`. Take the width from there,
+and keep the band as the value beside the bar. Do not estimate it by counting blocks in the ASCII bar;
+that bar is already rounded to twenty steps.
 
 **Both axis bars are the same colour.** Red on a `LOW` bar reads as an error when it is a finding.
+
+**The skill's URL comes off that last line.** It is on the ASCII card because a terminal has nowhere
+else to put it. Here the footer carries it, and twice on one page is once too many.
 
 ## 3 · Blockquotes become callouts
 
@@ -101,6 +137,9 @@ text they disappear. Two kinds:
 ```html
 <div class="callout important"><span class="kicker">Important</span>{the block's content}</div>
 ```
+
+Anything else: if the block describes how something goes wrong, it is `IMPORTANT`; otherwise `NOTE`.
+When it is genuinely unclear, use `NOTE`. The red one earns its colour by being rare.
 
 The severity legend line gets `class="legend"` rather than being a paragraph like any other.
 
@@ -206,15 +245,25 @@ Any Chromium browser prints a PDF from the command line, and one of these is on 
 Try them in order and use the first that exists:
 
 ```
-macOS      /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-           /Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge
-           /Applications/Brave Browser.app/Contents/MacOS/Brave Browser
+macOS      /Applications/{Google Chrome.app/Contents/MacOS/Google Chrome,
+                           Microsoft Edge.app/Contents/MacOS/Microsoft Edge,
+                           Brave Browser.app/Contents/MacOS/Brave Browser,
+                           Chromium.app/Contents/MacOS/Chromium}
+           the same four under ~/Applications
+           then the PATH, as on Linux
 
 Windows    C:\Program Files\Google\Chrome\Application\chrome.exe
            C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+           C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe
+           then the PATH
 
-Linux      google-chrome · chromium · microsoft-edge   (on PATH)
+Linux      google-chrome · google-chrome-stable · chromium · chromium-browser
+           microsoft-edge · brave-browser        (on PATH)
 ```
+
+**Check the PATH on macOS too, not only the four app bundles.** A machine with Chromium from Homebrew,
+or Chrome installed per-user under `~/Applications`, has a browser; a list of four hardcoded paths
+reports that it does not, and then you stop for no reason.
 
 ```
 "<browser>" --headless --disable-gpu --no-pdf-header-footer \
@@ -224,8 +273,14 @@ Linux      google-chrome · chromium · microsoft-edge   (on PATH)
 `--no-pdf-header-footer` matters: without it every page gets the file path and a date stamp in the
 margins, which is exactly what you do not want on a document someone forwards.
 
+**It worked when it prints `N bytes written to file <path>` and exits 0.** On macOS it also writes
+`CVDisplayLinkCreateWithCGDisplay failed` and `Trying to load the allocator multiple times` to stderr.
+Both are noise from a headless browser on a machine with a display, both are harmless, and neither means
+the PDF is wrong. Judge the run by the written-bytes line, not by a clean stderr.
+
 **Where it goes.** The user's Downloads folder, `~/Downloads` or `%USERPROFILE%\Downloads`, named
-`coreclr-fit-{app}.pdf`. Not the solution root: the report is already in their repo and a second file
+`coreclr-fit-{app}.pdf` with the app name lowercased and its spaces turned into hyphens, so
+`Kestrel Field` becomes `coreclr-fit-kestrel-field.pdf`. Not the solution root: the report is already in their repo and a second file
 there is one more thing to gitignore.
 
 **If no browser is there, say so and stop.** Leave the `.html` where you built it, tell them the path,
@@ -236,10 +291,21 @@ check your work, which costs them more than the PDF was worth.
 
 ## 6 · Before you hand it over
 
+Check these against the HTML, which you can open and read. Every one of them is answerable without a
+PDF renderer:
+
 ```
-[ ] The PDF opens, and page 1 is the summary and the card
-[ ] Bar widths match their numbers: 36/50 is 72% of the bar, not 36%
-[ ] No page carries a file path or a date stamp in the margin
-[ ] The ASCII card and the ASCII sign-off are gone, replaced by the card markup and the footer
-[ ] Nothing in the PDF says anything the markdown report does not
+[ ] Every bar width is its points over its maximum, and Upside's came from the section heading
+[ ] Both ASCII blocks are gone: the card is markup now, and the footer replaced the sign-off
+[ ] No table has an empty grey band where its header would be
+[ ] Every number, every file:line and every sentence is the report's. Nothing from the example survived
+[ ] Nothing in the page says anything the markdown report does not
 ```
+
+**Do not tick anything you have not looked at.** A checklist filled in from intention rather than from
+the file is worse than no checklist, because it ends the review.
+
+**You will not be able to inspect the PDF itself**, and that is expected: rendering one needs a tool
+this skill will not install. So check the HTML, which is the same document, and then say plainly what
+you verified and what you did not — *"I checked the page; I have not opened the PDF"* is the honest
+sentence, and it takes one line.
