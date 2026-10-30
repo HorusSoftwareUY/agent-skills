@@ -42,7 +42,8 @@ the tags.
   </div>
   <div class="summary">{the four paragraphs of § Summary, each in its own <p>}</div>
   {the card, § 2}
-  {the rest of the report, from the headline down, as HTML}
+  {the rest of the report, as HTML, starting at the bold paragraph that sits under the
+   ASCII card — the one that says why the verdict holds — and running to the end}
   <div class="foot">
     <img class="logo" alt="Horus Studio" src="data:image/png;base64,{the logo}">
     <div class="txt">
@@ -61,6 +62,11 @@ the header carries it. The `## Summary` heading and its paragraphs, because they
 characters makes sense in a terminal and nowhere else. And the `---` immediately above that sign-off,
 which exists to separate it in a text file; left in, it draws a rule directly above a footer that
 already has a border.
+
+**Ordinary markdown is ordinary HTML**, and this file only writes down the transformations that are
+not obvious. `*emphasis*`, `**strong**`, `` `code` ``, links, lists and fenced blocks become `<em>`,
+`<strong>`, `<code>`, `<a>`, `<ul>` and `<pre><code>` with nothing special about them. Everything this
+file does spell out is a case where the obvious answer is wrong.
 
 **A table whose header row is entirely empty has no header.** Several tables in the report are
 two-column key/value lists written as `| | |`, which is the markdown way of saying "no headings here".
@@ -95,44 +101,48 @@ HTML and the PDF stay on their machine.
 The ASCII card does not survive being typeset — it is a monospace drawing that exists because a
 terminal has nothing else. Rebuild it as markup, reading the values off the card you already wrote.
 
-**The numbers below are from a different report than yours.** They are here to show the shape; every one
-of them has to be replaced. If a value from this block survives into your page, you copied the example
-instead of your own card.
+**Every number below belongs to an app called Northwind that does not exist.** They are here to show
+the shape, and not one of them is a value you should keep. `Northwind`, `58`, `52`, `31/50`, `14/20` and
+`13/30` appear in no real report, so if any of them survives into your page you copied the example
+instead of reading your own card.
 
 ```html
 <div class="card">
   <div class="axis"><span class="lbl">Readiness</span>
-    <span class="bar"><i style="width:73%"></i></span>
-    <span class="val">73/100</span><span class="cap">upgrade on your schedule</span></div>
+    <span class="bar"><i style="width:58%"></i></span>
+    <span class="val">58/100</span><span class="cap">worth the prep</span></div>
   <div class="axis"><span class="lbl">Upside</span>
-    <span class="bar"><i style="width:34%"></i></span>
-    <span class="val">LOW</span><span class="cap">up to 44% less time on catalog lists</span></div>
+    <span class="bar"><i style="width:52%"></i></span>
+    <span class="val">MEDIUM</span><span class="cap">up to 44% less time on order lists</span></div>
 
   <div class="verdict">{the → line from the card, as written, however many sentences it runs to,
        with the ASCII line wrapping removed}</div>
 
   <div class="dims">
     <div class="axis"><span class="lbl">Build &amp; TFM</span>
-      <span class="bar"><i style="width:72%"></i></span>
-      <span class="val">36/50</span><span class="cap">net9.0 · 32-bit RIDs</span></div>
+      <span class="bar"><i style="width:62%"></i></span>
+      <span class="val">31/50</span><span class="cap">net9.0 · 32-bit RIDs</span></div>
     {one per dimension}
   </div>
 
-  <div class="meta"><b>Breaks the build: {n}</b> &nbsp;·&nbsp; After the fix list: {a} → {b}<br>
+  <div class="meta"><b>Breaks the build: {the count, or the word the card uses when there are
+       none}</b> &nbsp;·&nbsp; After the fix list: {a} → {b}<br>
   <!-- the ✖ stays on the ASCII card and does not come here: the severity legend is further down
        the page and a lone glyph above it reads as decoration -->
-  {the card's last lines, minus the skill URL: candidates verified · SDK · TFM · file counts ·
-   the version string}</div>
+  {the card's last lines: candidates verified · SDK · TFM · file counts · the version string.
+   Drop the leading ── rule, which only exists to draw a line inside a box, and drop the skill
+   URL, which the footer already carries}</div>
 </div>
 ```
 
 **The bar width is a percentage of the maximum, not of 100.** Readiness uses its own score. A dimension
-uses `points / maximum × 100`, so a `36/50` renders as `72%` and a `20/30` as `67%`. Getting this wrong
+uses `points / maximum × 100`, so Northwind's `31/50` renders as `62%` and its `13/30` as `43%`. Getting this wrong
 is the one error a reader spots instantly, because the bar and the number sit side by side.
 
 **Upside is the exception, because its score is not on the card.** The card shows only the band — `LOW`,
 `MEDIUM`, `HIGH` — and that is deliberate: a number invites "percent of what?". The score itself is in
-the heading of the report's Upside section, written as `— 67 / 100 · HIGH`. Take the width from there,
+the heading of the report's Upside section — Northwind's reads `— 52 / 100 · MEDIUM`. Take the width from
+there,
 and keep the band as the value beside the bar. Do not estimate it by counting blocks in the ASCII bar;
 that bar is already rounded to twenty steps.
 

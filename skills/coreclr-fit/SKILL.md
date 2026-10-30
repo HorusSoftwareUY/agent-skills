@@ -29,9 +29,19 @@ happens the rules usually come through and every literal block is gone, so the a
 the report is a different document. That is not a hypothetical: it is how the first failed run of this
 skill happened, and the scores in it were correct.
 
-**Check before you work.** Scroll to the end of what you are holding. If you cannot see the ASCII
-sign-off block, or the `markdown` skeleton in step 5, or all three scoring tables with their exact `Pts`
-values, you have a summary.
+**Check before you work, and check the end specifically.** The last line of this file reads:
+
+> **End of skill · `coreclr-fit v1`**
+
+If what you are holding does not end there, you do not have all of it — and that is the whole point of
+checking the end rather than the middle. **A truncated fetch looks perfect from the top.** The rules,
+the scoring tables and the report skeleton all sit in the first two thirds, so an agent that received
+80% of this file reads a complete, coherent skill, scores the project correctly, and produces a report
+missing its last sections without ever noticing. That has happened: the run that found this was handed
+roughly 83% and silently dropped the gains table and the sign-off from its report.
+
+So: if you cannot see that closing line, or the `markdown` skeleton in step 5, or all three scoring
+tables with their exact `Pts` values, you do not have the file.
 
 If you do:
 
@@ -44,6 +54,9 @@ If you do:
 
    A file on disk is never summarised. If you have no shell, this step is not available to you and the
    next one applies.
+   **Delegating the fetch to a subagent does not count**, and it is how the known failure happened.
+   What comes back is that agent's reading of the page, which is a summary wearing another name. Fetch
+   it yourself, into a file.
 2. **If you cannot get the verbatim text, say so and stop.** One sentence: *"I only have a summarised
    copy of this skill, so I cannot produce its report. Install it, or give me the raw file."* Do not
    produce a best-effort version: a report missing the card and the sign-off is indistinguishable from
@@ -850,9 +863,9 @@ if they are the same document with different values in it.
 {one block per dimension, each deduction as `rule → value → file:line`, totals recomputed
  from the rows · state what passed too · name the rules that could not fire and their points}
 
-## Upside by signal
-{the four rows with the points earned and the count behind each · name the absent axes
- that apply to this repo}
+## Upside by signal — {score} / 100 · {band}
+{the score goes in the heading because the card carries only the band · then the four rows
+ with the points earned and the count behind each · name the absent axes that apply here}
 
 ## Reported, never scored
 
@@ -1353,3 +1366,7 @@ that has actually gone missing from a real run.
 If one of these fails, fix it before handing the file over. A report that is missing the card or the
 sign-off is not a shorter version of this report — it is a different document, and the person reading it
 has no way to tell what else was left out.
+
+---
+
+**End of skill · `coreclr-fit v1`**
