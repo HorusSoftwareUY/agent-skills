@@ -1,7 +1,7 @@
 # Horus agent skills
 
 Agent skills we built for our own work and publish instead of charging for them.
-Each one is a single Markdown file with no scripts, so you can read it before you trust it.
+Each one is plain Markdown with no scripts, so you can read it before you trust it.
 
 Currently focused on .NET MAUI and mobile.
 
@@ -24,14 +24,15 @@ team can defend in a meeting.
 *Upside* scores how much of the measured gain this particular app can actually capture. An app can be
 ready to upgrade and have nothing to gain, and the report says so when that is the answer.
 
-### Use it once, nothing to install
+### Let your agent install it
 
-Paste this into any coding agent that has a shell:
+Paste this into any coding agent that has a shell, as is or in your own language. The report comes out
+in the language you write in:
 
 ```
-Download https://skills.horus.com.uy/coreclr-fit with curl, not with your web fetch
-tool, because I need the raw file and not a summary of it. Save it as
-coreclr-fit-skill.md, read the whole thing, then follow it to score this project.
+Download SKILL.md and pdf.md from https://skills.horus.com.uy/coreclr-fit/ with curl, one request per file, not a web fetch. Save them in a coreclr-fit folder inside your skills directory (.claude/skills, .agents/skills, .github/skills or .cursor/skills).
+
+Then read SKILL.md in full and use it to score this project for .NET 11 / CoreCLR.
 ```
 
 **The "with curl" part is not decoration.** Some agents fetch a page and hand the model a summary of it
@@ -40,12 +41,14 @@ reproduced exactly, a 72-column score card, a severity legend, a baseline paragr
 summary keeps the rules and drops all of them. The scores come out right and the report is a different
 document. Going through a file on disk removes the question.
 
-### Or install it
+### Or install it from your terminal
 
 ```bash
-mkdir -p .claude/skills/coreclr-fit && \
-  curl -fsSL https://skills.horus.com.uy/coreclr-fit -o .claude/skills/coreclr-fit/SKILL.md
+curl -fsSL --create-dirs --output-dir .claude/skills/coreclr-fit -O "https://skills.horus.com.uy/coreclr-fit/{SKILL.md,pdf.md}"
 ```
+
+Swap `.claude` for `.agents` (Codex), `.github` (Copilot) or `.cursor` (Cursor). On Windows, type
+`curl.exe` instead of `curl`. `pdf.md` is only read when someone asks for the report as a PDF.
 
 Or as a plugin marketplace:
 
@@ -53,7 +56,7 @@ Or as a plugin marketplace:
 claude plugin marketplace add HorusSoftwareUY/agent-skills
 ```
 
-Same file either way. Installing just means the team has it and it triggers on its own when someone asks
+Same files either way. Installing just means the team has it and it triggers on its own when someone asks
 whether the upgrade is worth it.
 
 Works in Claude Code, Cursor, Codex and GitHub Copilot.
@@ -71,7 +74,8 @@ on a stronger model and compare the two.
 
 ### What you get
 
-A `coreclr-fit.md` written at the solution root, and a card printed in the conversation:
+A `coreclr-fit-<your-app>.md` written at the solution root, and the summary and card printed in the
+conversation:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -110,7 +114,7 @@ gains from independent axes into a single number.
 
 ### It does not change your project
 
-It reads the repo and writes one file. No source file, no `.csproj`, no package reference, no TFM. The
+It reads the repo and writes one file, the report. No source file, no `.csproj`, no package reference, no TFM. The
 commands it runs are read-only: `dotnet msbuild -getProperty` evaluates without compiling. If you read
 the report and then ask it to apply the fixes, that is a separate step you ask for.
 

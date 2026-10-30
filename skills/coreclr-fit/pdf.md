@@ -17,7 +17,7 @@ document.
 
 ## 1 · Build the HTML
 
-Write `coreclr-fit.html` next to the report, self-contained. Everything inline, no external requests:
+Write `coreclr-fit-{app}.html` next to the report, with the report's own `{app}`, self-contained. Everything inline, no external requests:
 the person is going to open this on a plane or forward it to someone behind a firewall.
 
 **Write the markup yourself. Do not run a converter.** You have the report — you either wrote it a
@@ -323,8 +323,8 @@ Both are noise from a headless browser on a machine with a display, both are har
 the PDF is wrong. Judge the run by the written-bytes line, not by a clean stderr.
 
 **Where it goes.** The user's Downloads folder, `~/Downloads` or `%USERPROFILE%\Downloads`, named
-`coreclr-fit-{app}.pdf` with the app name lowercased and its spaces turned into hyphens, so
-`Kestrel Field` becomes `coreclr-fit-kestrel-field.pdf`. Not the solution root: the report is already in their repo and a second file
+`coreclr-fit-{app}.pdf`, the same `{app}` as the report's file name, so `coreclr-fit-kestrel-field.md`
+becomes `coreclr-fit-kestrel-field.pdf`. Not the solution root: the report is already in their repo and a second file
 there is one more thing to gitignore.
 
 **If no browser is there, say so and stop.** Leave the `.html` where you built it, tell them the path,

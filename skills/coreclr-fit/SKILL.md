@@ -47,10 +47,11 @@ That is not hypothetical — it has now happened twice, and in both runs every d
   from one where the analysis fell short**, and the person reading it has no way to tell which they are
   holding. That is the real cost: not that it looks different, but that it looks like something else.
 
-**If you want the whole file**, it is the same URL, and a copy saved to disk is never summarised:
+**If you want the whole file**, it is the same URL, and a copy saved to disk is never summarised. This
+installs it, with `pdf.md` next to it (swap `.claude` for your agent's folder, `curl.exe` on Windows):
 
 ```bash
-curl -fsSL https://skills.horus.com.uy/coreclr-fit -o coreclr-fit-skill.md
+curl -fsSL --create-dirs --output-dir .claude/skills/coreclr-fit -O "https://skills.horus.com.uy/coreclr-fit/{SKILL.md,pdf.md}"
 ```
 
 Asking the same web tool again returns the same summary, and sending a subagent returns that agent's
@@ -107,7 +108,7 @@ on Mono" means "stay on .NET 10", which is a version decision rather than a buil
 
 **Read, report, change nothing.** This skill analyses a repository and writes a report about it. It edits
 no source file, no `.csproj`, no `Directory.Build.props`, no package reference, no TFM. **The only file it
-creates is `coreclr-fit.md` at the solution root.** Its commands are read-only by construction —
+creates is `coreclr-fit-{app}.md` at the solution root** (step 5 says how to name it). Its commands are read-only by construction —
 `-getProperty` evaluates without compiling, `--list-sdks` reports, `unzip -l` lists — and evaluating may
 populate `obj/` the way any restore does, which is the whole of its footprint. The snippets in this file
 are content for the reader, never commands to execute.
@@ -844,8 +845,8 @@ back the steps that apply plus the two or three findings that would bite first. 
 are what makes the upgrade go smoothly and they stay in either case.
 
 **This changes what you deliver, never how you deliver it.** If they asked for steps in the chat, answer
-in the chat and write no file. **If you write a file, it is the report** — `coreclr-fit.md`, the full
-skeleton, the card, the sign-off. There is no short version of the file: a `coreclr-fit.md` that is
+in the chat and write no file. **If you write a file, it is the report** — `coreclr-fit-{app}.md`, the full
+skeleton, the card, the sign-off. There is no short version of the file: a report that is
 missing the card or the sign-off is indistinguishable from one where the analysis quietly fell short,
 and the reader has no way to tell which they are holding.
 
@@ -853,7 +854,10 @@ And the skill still changes nothing. Handing over the steps is not the same as r
 
 ### 5 · Write the report
 
-One file, `coreclr-fit.md`, at the solution root.
+One file, `coreclr-fit-{app}.md`, at the solution root. `{app}` is the app's name, its `ApplicationTitle`
+or the project name when there is none, lowercased with spaces turned into hyphens: `Kestrel Field`
+becomes `coreclr-fit-kestrel-field.md`. The PDF takes the same name, so the two travel together, and a
+repo with two apps keeps two reports instead of one overwriting the other.
 
 **What you print in the conversation is the summary and then the card, in that order** — the same order
 the report itself opens with, so the person who read it in the chat and the person who opens the file
@@ -997,17 +1001,17 @@ A card that does not align is the first thing a reader notices and the last thin
 
 **Measure it with a tool, after writing the file and before printing anything.** You cannot count
 padding reliably by reading it, and runs that tried came back one or two columns short on half the lines,
-with the right border zigzagging. So once `coreclr-fit.md` is written, measure every card line with
+with the right border zigzagging. So once the report is written, measure every card line with
 whatever the machine has, fix the short or long ones by adding or removing spaces before the closing `│`,
-and measure again until every line is 72:
+and measure again until every line is 72 (put the report's real file name in place of `{app}`):
 
 ```bash
 # macOS / Linux
-python3 -c "import sys;[print(i,len(l.rstrip('\n'))) for i,l in enumerate(open('coreclr-fit.md',encoding='utf-8'),1) if l[:1] in '┌│└' and len(l.rstrip('\n'))!=72]"
+python3 -c "import sys;[print(i,len(l.rstrip('\n'))) for i,l in enumerate(open('coreclr-fit-{app}.md',encoding='utf-8'),1) if l[:1] in '┌│└' and len(l.rstrip('\n'))!=72]"
 ```
 ```powershell
 # Windows
-Select-String -Path coreclr-fit.md -Pattern '^[┌│└]' -Encoding utf8 | ? { $_.Line.Length -ne 72 } | % { "$($_.LineNumber) $($_.Line.Length)" }
+Select-String -Path coreclr-fit-{app}.md -Pattern '^[┌│└]' -Encoding utf8 | ? { $_.Line.Length -ne 72 } | % { "$($_.LineNumber) $($_.Line.Length)" }
 ```
 
 No output means the card is right. Then print the card in the chat **copied from the file**, never
@@ -1083,7 +1087,8 @@ traced to the rules that produced it.
 right-hand caption is what stops it being read as a blanket speed claim. Same for Readiness: the caption
 says what kind of work is left.
 
-On a re-run, read the previous `coreclr-fit.md` and lead with the movement instead of the absolute
+On a re-run, read the previous `coreclr-fit-{app}.md` (or a `coreclr-fit.md`, the name earlier versions
+of this skill used) and lead with the movement instead of the absolute
 number — it turns the report into a plan with a finish line:
 
 ```
