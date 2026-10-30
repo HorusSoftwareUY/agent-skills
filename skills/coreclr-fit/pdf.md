@@ -15,15 +15,20 @@ document.
 Write `coreclr-fit.html` next to the report, self-contained. Everything inline, no external requests:
 the person is going to open this on a plane or forward it to someone behind a firewall.
 
-**You already have the report, so write the HTML, do not convert a file.** You wrote every section a
-moment ago and you still have it: emit the markup directly, the way you would write any page. Treating
-your own output as a document to be parsed is the long way around, and it is where two runs stop looking
-alike.
+**Write the markup yourself. Do not run a converter.** You have the report — you either wrote it a
+moment ago or you just read it — so emit the HTML the way you would write any page.
 
-Only when you genuinely do not have the content — a different session, a report someone handed you —
-convert the file instead, and then `pandoc -f gfm -t html` is the right tool and worth using. The ban on
-pandoc in § 5 is about producing the **PDF**, where a browser does a better job; it says nothing about
-getting markdown into HTML.
+This is one path on purpose, and an earlier draft of this file offered two. It let you convert the file
+with `pandoc` when the report came from somewhere else, and that turned out to be a fork nobody can
+stand on: to know which branch you are on you have to read the report, and once you have read it you
+have the content, so both branches are always open. Two agents took different ones and produced visibly
+different documents. Every rule in §§ 1 to 3 — what comes out of the body, how a card is built, what a
+blockquote becomes — is written for someone emitting markup. Run a converter and they all turn into
+surgery on generated HTML, which is a second procedure nobody wrote down.
+
+No converter also means no dependency. `pandoc` is not installed on a stock machine and neither is any
+Python markdown library, and discovering that halfway through is a worse place to be than simply writing
+the tags.
 
 ```html
 <!doctype html><html lang="{the report's language}"><meta charset="utf-8">
@@ -32,7 +37,8 @@ getting markdown into HTML.
 <body>
   <div class="head">
     <p class="eyebrow">CoreCLR fit</p>
-    <h1>{app}<span class="tfm">{every platform TFM, separated by ·} &nbsp;→&nbsp; .NET 11</span></h1>
+    <h1>{app}<span class="tfm">{the TFMs, exactly as the report's own title line writes them}
+      &nbsp;→&nbsp; .NET 11</span></h1>
   </div>
   <div class="summary">{the four paragraphs of § Summary, each in its own <p>}</div>
   {the card, § 2}
@@ -56,11 +62,16 @@ characters makes sense in a terminal and nowhere else. And the `---` immediately
 which exists to separate it in a text file; left in, it draws a rule directly above a footer that
 already has a border.
 
-**A table whose header row is empty has no header.** Several tables in the report are two-column
-key/value lists written as `| | |`, which is the markdown way of saying "no headings here". Rendered
-faithfully they get an empty grey band on top, because the stylesheet gives `thead th` a background.
-Drop the `<thead>` when every one of its cells is empty and start the table at `<tbody>`. **This is not
-editing the report**: the content of an empty row is nothing, and nothing is what you render.
+**A table whose header row is entirely empty has no header.** Several tables in the report are
+two-column key/value lists written as `| | |`, which is the markdown way of saying "no headings here".
+Give those no `<thead>` at all and start them at `<tbody>`; the stylesheet puts a grey band behind
+`thead th`, and a band with nothing in it reads as a rendering fault. **This is not editing the report**:
+the content of an empty row is nothing, and nothing is what you render.
+
+**A header with some empty cells is still a header, and it keeps its band.** `| | Finding | file:line |
+Scope |` leads with a blank because the first column holds a severity mark, which needs no title; the
+other three are doing their job. Same for `| | Measured | |`. Render those as headers. The test is
+whether anything is in the row, not whether everything is.
 
 **`{app}` is the app's name as the report writes it, spaces and all.** It goes into the `<h1>` and the
 `<title>` exactly like that. Only the PDF filename in § 5 needs it flattened.
@@ -69,7 +80,9 @@ editing the report**: the content of an empty row is nothing, and nothing is wha
 it is beside it; a plugin install brings the whole folder. If you fetched this over HTTP there is no
 "beside", so take it from
 `https://raw.githubusercontent.com/HorusSoftwareUY/agent-skills/main/skills/coreclr-fit/logo.png`.
-Either way, inline it as base64 — and that is not only so the file works offline. A remote `<img>` means
+Download it to a temporary path, inline it as base64, and delete the copy: a stray `logo.png` next to
+their report is one more thing for them to notice and wonder about. Inlining is not only so the file
+works offline. A remote `<img>` means
 our server learns every time someone opens this document, and from where. A report about a client's code
 has no business telling us when they read it. If you cannot get the logo at all, drop the `<img>` and
 keep the footer text: a missing logo is better than a broken one.
@@ -95,7 +108,8 @@ instead of your own card.
     <span class="bar"><i style="width:34%"></i></span>
     <span class="val">LOW</span><span class="cap">up to 44% less time on catalog lists</span></div>
 
-  <div class="verdict">{the → line from the card, as one sentence}</div>
+  <div class="verdict">{the → line from the card, as written, however many sentences it runs to,
+       with the ASCII line wrapping removed}</div>
 
   <div class="dims">
     <div class="axis"><span class="lbl">Build &amp; TFM</span>
@@ -105,6 +119,8 @@ instead of your own card.
   </div>
 
   <div class="meta"><b>Breaks the build: {n}</b> &nbsp;·&nbsp; After the fix list: {a} → {b}<br>
+  <!-- the ✖ stays on the ASCII card and does not come here: the severity legend is further down
+       the page and a lone glyph above it reads as decoration -->
   {the card's last lines, minus the skill URL: candidates verified · SDK · TFM · file counts ·
    the version string}</div>
 </div>
@@ -241,6 +257,10 @@ a browser. It is their own browser, headless, on a local file, and it installs n
 a program starting, and they should hear it from you rather than from a permission prompt. One sentence,
 and let them say no.
 
+**If there is nobody there to answer, say it and carry on.** A run with no one at the keyboard should
+not stall on a courtesy: state what you are about to do, do it, and let the sentence stand as the record.
+Waiting for a reply that cannot come is the one outcome worse than not asking.
+
 Any Chromium browser prints a PDF from the command line, and one of these is on almost every machine.
 Try them in order and use the first that exists:
 
@@ -297,7 +317,7 @@ PDF renderer:
 ```
 [ ] Every bar width is its points over its maximum, and Upside's came from the section heading
 [ ] Both ASCII blocks are gone: the card is markup now, and the footer replaced the sign-off
-[ ] No table has an empty grey band where its header would be
+[ ] No table has a grey header band with nothing at all in it. A band holding one word is fine
 [ ] Every number, every file:line and every sentence is the report's. Nothing from the example survived
 [ ] Nothing in the page says anything the markdown report does not
 ```
