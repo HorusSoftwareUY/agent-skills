@@ -2,6 +2,8 @@
 > This is the case the skill exists for: **nothing blocks, and the payoff is partial.** A report that
 > only ever said "migrate" would be worthless here.
 
+# CoreCLR fit: Verado (net9.0-android35.0 → .NET 11)
+
 ## Summary
 
 You can move Verado to .NET 11 whenever you like. The one thing you have to change first is a build
