@@ -809,6 +809,16 @@ It lands inside their repository, so when you hand it over you may add one line 
 that they may prefer not to commit it. Offer it, do not insist, and leave it out of the file itself — it
 is a courtesy to the reader, not a section of the report.
 
+**And offer the PDF, once.** In the same breath, in the language of the report, ask whether they want it
+as a PDF. One line. Do not sell it, do not explain what it looks like, and never produce one unasked —
+the report is finished without it.
+
+If they say yes, follow `pdf.md`: next to this file when the skill came in as a plugin, otherwise
+`https://raw.githubusercontent.com/HorusSoftwareUY/agent-skills/main/skills/coreclr-fit/pdf.md`. **Tell
+them first that it writes an HTML page and launches their own browser, headless, to print it.** This
+skill's whole posture is that it touches nothing, so a browser starting is a change of posture, however
+small, and they get to decline it. The PDF goes to their Downloads folder, never into the repo.
+
 **Copy the skeleton below and fill the slots.** Do not design a structure of your own, do not reorder it,
 and do not decide section by section whether something is worth including. The parts written out in full
 — the baseline paragraph, the severity legend, the version line, the sign-off — are already correct;
