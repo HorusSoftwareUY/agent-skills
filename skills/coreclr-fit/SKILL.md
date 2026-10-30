@@ -849,6 +849,22 @@ later are reading the same document. The summary first, because it is the part t
 a glossary; the card second, because it is what they will screenshot. Then one line saying where the
 file is. Nothing else: the sections below are what the file is for.
 
+**"The summary" means the report's Summary section, all four paragraphs, copied from the file** — not a
+headline of your own, not a one-line verdict. The message has exactly this shape, and nothing outside it:
+
+```
+{the four paragraphs of the Summary section, verbatim}
+
+{the card, verbatim, in its fenced block}
+
+{one line: where the file is, and that they may prefer not to commit it}
+{one line: the PDF offer}
+```
+
+No "key findings", no per-dimension recap, no bullet list of deductions, no "biggest win" aside. Every one
+of those is already in the file, in the place a reader expects it, and repeating it in the chat turns a
+summary someone can forward into a second, shorter report that disagrees with the first in tone.
+
 It lands inside their repository, so when you hand it over you may add one line saying it is there and
 that they may prefer not to commit it. Offer it, do not insist, and leave it out of the file itself — it
 is a courtesy to the reader, not a section of the report.
@@ -1402,6 +1418,8 @@ that has actually gone missing from a real run.
 [ ] Anything that made this run partial is stated — unanswered questions, rules that could not
     be checked, candidates scored without opening the file
 [ ] The card's build-break count equals the number of ✖ items, each with its block
+[ ] In the chat: the four Summary paragraphs verbatim, then the card, then the file line and the PDF
+    offer. No findings list, nothing else
 [ ] Every ✖ names the compiler error it produces, or it is not a ✖
 [ ] The last thing in the file is the sign-off block, verbatim
 ```
