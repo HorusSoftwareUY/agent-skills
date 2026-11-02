@@ -62,9 +62,7 @@ reading of the page, which is a summary wearing another name. Both have been tri
 stops applying. That is worth saying to them once.
 
 **And if you go ahead with part of it**, which is a reasonable call to make: say which parts you have in
-the first line of the report rather than in a footnote. A reader who knows the analysis was partial can
-act on it. A reader who does not know will act on it anyway, which is the failure this section exists to
-prevent.
+the first line of the report rather than in a footnote, so the reader acts on it knowing that.
 
 ## Principles
 
@@ -102,7 +100,7 @@ app-code gains on separate lines: the last kind is available without upgrading, 
 **Blocked is not stuck.** A gate means *you cannot move to .NET 11 today* — nothing more. .NET 10 is LTS
 and supported until **14 November 2028**, so not upgrading is a decision with real runway rather than an
 emergency. **Say the date, and work the remaining time out from today's** — never carry a fixed
-"N years", which is wrong the moment this file is a year old. Say what the gate is, and say that. (Mono itself is gone: from .NET 11 preview 6 CoreCLR is
+"N years", which is wrong the moment this file is a year old. Say what the gate is, and say the date. (Mono itself is gone: from .NET 11 preview 6 CoreCLR is
 the only runtime on Android, iOS, Mac Catalyst and tvOS, and `UseMonoRuntime` no longer exists, so "stay
 on Mono" means "stay on .NET 10", which is a version decision rather than a build flag.)
 
@@ -846,9 +844,8 @@ are what makes the upgrade go smoothly and they stay in either case.
 
 **This changes what you deliver, never how you deliver it.** If they asked for steps in the chat, answer
 in the chat and write no file. **If you write a file, it is the report** — `coreclr-fit-{app}.md`, the full
-skeleton, the card, the sign-off. There is no short version of the file: a report that is
-missing the card or the sign-off is indistinguishable from one where the analysis quietly fell short,
-and the reader has no way to tell which they are holding.
+skeleton, the card, the sign-off. There is no short version of the file: one missing the card
+or the sign-off reads exactly like a run that fell short.
 
 And the skill still changes nothing. Handing over the steps is not the same as running them.
 
