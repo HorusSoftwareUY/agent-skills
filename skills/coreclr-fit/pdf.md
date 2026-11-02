@@ -45,7 +45,10 @@ the tags.
     <h1>{app}<span class="tfm">{the TFMs, exactly as the report's own title line writes them}
       &nbsp;→&nbsp; .NET 11</span></h1>
   </div>
-  <div class="summary">{the four paragraphs of § Summary, each in its own <p>}</div>
+  <div class="summary">
+    <h2>{the § Summary heading, in the report's language}</h2>
+    {the four paragraphs of § Summary, each in its own <p>}
+  </div>
   {the card, § 2}
   {the rest of the report, as HTML, starting at the bold paragraph that sits under the
    ASCII card — the one that says why the verdict holds — and running to the end}
@@ -237,8 +240,9 @@ hr{ border:0; border-top:1px solid var(--line); margin:7mm 0; }
           font-weight:650; margin:0 0 2.5mm; }
 
 .summary{ font-size:12pt; line-height:1.6; margin-bottom:7mm; }
+.summary h2{ margin-top:0; }
 .summary p{ margin:0 0 3.5mm; }
-.summary p:first-child{ font-weight:600; }
+.summary p:first-of-type{ font-weight:600; }
 
 .card{ border:1px solid var(--line); border-top:3px solid var(--accent); padding:5mm 5mm 4mm;
        margin:0 0 7mm; break-inside:avoid; }

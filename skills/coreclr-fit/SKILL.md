@@ -909,6 +909,9 @@ if they are the same document with different values in it.
 
 {score card — geometry below}
 
+> **Readiness** answers *can we upgrade* · **Upside** answers *should we*. They move
+> independently: a project can be ready and have little to gain.
+
 {headline: one sentence, the decision they came for}
 
 ## What breaks the build
@@ -1086,6 +1089,11 @@ traced to the rules that produced it.
 **Never print either axis without its caption.** `HIGH` on its own says nothing about what improves; the
 right-hand caption is what stops it being read as a blanket speed claim. Same for Readiness: the caption
 says what kind of work is left.
+
+**And say once what the two axes are.** Two lines under the card, in the skeleton above, because the card
+is the part that gets screenshotted and forwarded, and whoever opens it second has no idea that a project
+can score 90 and still have nothing to gain. Keep it to those two lines: it is a legend, not a glossary,
+and the sections below are where each axis explains itself. It translates like any other prose.
 
 On a re-run, read the previous `coreclr-fit-{app}.md` (or a `coreclr-fit.md`, the name earlier versions
 of this skill used) and lead with the movement instead of the absolute
