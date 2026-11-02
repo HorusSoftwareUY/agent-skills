@@ -456,24 +456,22 @@ everything else here the fix is often outside your control: you escalate to a ma
 > for the current framework and ships `net6.0-*` only. `Xamarin.AndroidX.Core` carries the old brand and
 > ships `net10.0-android36.0`. Scoring either one from its name is a mistake the reader can see.
 >
-> **Read what the resolver chose, in `obj/project.assets.json`.** That file is written by every restore
-> and it records, per TFM, which asset of each package the build actually picked — which is exactly what
-> this rule asks. A package landing on `net8.0-android34.0` for a `net10.0-android` target proves
-> `net8.0` is the newest it publishes.
+> **Read what the resolver chose, in `obj/project.assets.json`.** Every restore writes it, and it records
+> which asset of each package the build picked per TFM, which is exactly what this rule asks: landing on
+> `net8.0-android34.0` for a `net10.0-android` target proves `net8.0` is the newest it ships.
 >
-> Prefer it over the package folder, and not only because it is more direct: the global cache is pruned,
-> moved by `NUGET_PACKAGES`, and simply absent on a fresh clone or a CI runner. A real run found seven
-> SkiaSharp packages in the graph and nothing at all in the cache, which looks identical to a package
-> with no assets if you are reading folders.
+> Prefer it over the package folder: the global cache is pruned, moved by `NUGET_PACKAGES`, and absent on
+> a fresh clone or a CI runner. A real run found seven SkiaSharp packages in the graph and nothing in the
+> cache, which reading folders cannot tell apart from a package that ships nothing. **Say which source
+> you used**, because the two answer slightly different questions.
 >
-> If you do fall back to the cache, it is a read-only look and needs no network:
+> Falling back to the cache is a read-only look and needs no network:
 >
 > ```bash
 > ls ~/.nuget/packages/<package.id>/<version>/lib/
 > ```
 >
-> The folder names are the frameworks it publishes for. **Say in the report which of the two you used**,
-> because they answer slightly different questions and the reader cannot tell from the deduction. **A package counts when either of these is
+> The folder names are the frameworks it publishes for. **A package counts when either of these is
 > true:**
 >
 > - It ships `monoandroid*`, `xamarin.ios*` or `xamarin.mac*` assets. Genuinely Xamarin-era: those
@@ -513,11 +511,8 @@ everything else here the fix is often outside your control: you escalate to a ma
 > deduction is exactly what this rule was rewritten to stop. List those packages under *Reported, never
 > scored* so the reader knows the first thing the net11 restore will tell them.
 >
-> **One source failing is not that case**, and the difference matters because an empty folder and a
-> package with no assets look identical. A cache that does not hold the package returns the same nothing
-> as a package that ships nothing, and a run that read that nothing as an answer closed a gate on it.
-> The assets file has no such ambiguity: either it is there and names the asset the resolver chose, or it
-> is absent and you know you do not know.
+> **One source failing is not that case**, which is the whole reason the assets file goes first: it is
+> either there and names the asset, or absent and you know you do not know.
 
 > **Not a rule here: a missing `Xamarin.AndroidX.AppCompat` reference.** It used to deduct as a net11
 > breakage and no source supports that — a library that uses AppCompat types needs the reference on any
@@ -1155,6 +1150,20 @@ to do.
 Order by score gained ÷ scope, split into tiers, and **state the projected total explicitly** — *"Tier 1
 takes Readiness from 81 to 98"*. If something is deliberately not on the list, say so and say why; an
 unexplained ceiling below 100 reads as an oversight.
+
+**A fix they cannot perform does not count toward that total.** The three situations the package rule
+already sorts into decide it: a package with a current replacement is ordinary work and counts, while
+*no replacement, maintainer active* and *no replacement, nothing published in years* close when somebody
+else publishes, not when this team edits anything. Keep the item in the list, because it is real and
+worth tracking, and leave its points out of the ceiling. **Two runs on the same repo once split 100
+against 94 on exactly this**, and that number sits on the card, where two reports are meant to be
+comparable.
+
+Then say, in one line, both halves: where their own work ends **and what closes the rest** — *"your work
+takes this to 94; the last 6 close when SkiaSharp publishes, not when you edit anything"*. Naming only
+the lower number reads as a ceiling they can never clear, which is false and is the one way this rule can
+make a report worse than no rule at all. A package three majors behind is a risk signal, not a blocker:
+they can upgrade at 94.
 
 **Size every fix by scope, never by time.** Count what has to change and let the reader price it:
 *"18 files · 34 call sites · 11 DTOs · 6 with custom converters"*. Tier headers sum scope the same way.
