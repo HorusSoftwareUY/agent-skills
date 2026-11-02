@@ -17,8 +17,13 @@ document.
 
 ## 1 · Build the HTML
 
-Write `coreclr-fit-{app}.html` next to the report, with the report's own `{app}`, self-contained. Everything inline, no external requests:
-the person is going to open this on a plane or forward it to someone behind a firewall.
+Write `coreclr-fit-{app}.html` with the report's own `{app}`, **in the same folder the PDF goes to**
+(§ 5: their Downloads), never beside the report. The skill's standing promise is that the only file it
+puts in their repository is the report, and an HTML left at the solution root quietly breaks it — it is
+the second file § 5 argues against, 50 KB of it, with no line in any `.gitignore` expecting it.
+
+It is self-contained, everything inline and no external requests, so it works from anywhere: the person
+is going to open this on a plane or forward it to someone behind a firewall.
 
 **Write the markup yourself. Do not run a converter.** You have the report — you either wrote it a
 moment ago or you just read it — so emit the HTML the way you would write any page.
@@ -331,7 +336,7 @@ the PDF is wrong. Judge the run by the written-bytes line, not by a clean stderr
 becomes `coreclr-fit-kestrel-field.pdf`. Not the solution root: the report is already in their repo and a second file
 there is one more thing to gitignore.
 
-**If no browser is there, say so and stop.** Leave the `.html` where you built it, tell them the path,
+**If no browser is there, say so and stop.** Leave the `.html` in Downloads, tell them the path,
 and tell them to open it and print to PDF from the browser — the stylesheet already carries the print
 rules, so the result is the same. Do not install anything, do not reach for pandoc or LaTeX, and do not
 quietly produce something worse. A person who asked for a PDF and got a silent half-answer has to

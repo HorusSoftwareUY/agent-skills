@@ -456,13 +456,24 @@ everything else here the fix is often outside your control: you escalate to a ma
 > for the current framework and ships `net6.0-*` only. `Xamarin.AndroidX.Core` carries the old brand and
 > ships `net10.0-android36.0`. Scoring either one from its name is a mistake the reader can see.
 >
-> The assets are on disk after any restore, so this is a read-only look, no network:
+> **Read what the resolver chose, in `obj/project.assets.json`.** That file is written by every restore
+> and it records, per TFM, which asset of each package the build actually picked — which is exactly what
+> this rule asks. A package landing on `net8.0-android34.0` for a `net10.0-android` target proves
+> `net8.0` is the newest it publishes.
+>
+> Prefer it over the package folder, and not only because it is more direct: the global cache is pruned,
+> moved by `NUGET_PACKAGES`, and simply absent on a fresh clone or a CI runner. A real run found seven
+> SkiaSharp packages in the graph and nothing at all in the cache, which looks identical to a package
+> with no assets if you are reading folders.
+>
+> If you do fall back to the cache, it is a read-only look and needs no network:
 >
 > ```bash
 > ls ~/.nuget/packages/<package.id>/<version>/lib/
 > ```
 >
-> The folder names are the frameworks it publishes for. **A package counts when either of these is
+> The folder names are the frameworks it publishes for. **Say in the report which of the two you used**,
+> because they answer slightly different questions and the reader cannot tell from the deduction. **A package counts when either of these is
 > true:**
 >
 > - It ships `monoandroid*`, `xamarin.ios*` or `xamarin.mac*` assets. Genuinely Xamarin-era: those
@@ -496,10 +507,17 @@ everything else here the fix is often outside your control: you escalate to a ma
 > **Never write "replace this" for a package in the second or third situation.** It is advice the team
 > cannot act on, and it is how a fix list loses its reader.
 >
-> **If you cannot look** — the package was never restored, or there is no `lib/` because it is a native
+> **If you cannot look** — meaning **both** sources failed you: no `obj/project.assets.json` because
+> nothing has been restored, and no `lib/` either because the package is not in the cache or is a native
 > or build-only package — say the check is pending and name the package, do not deduct. An unverified
 > deduction is exactly what this rule was rewritten to stop. List those packages under *Reported, never
 > scored* so the reader knows the first thing the net11 restore will tell them.
+>
+> **One source failing is not that case**, and the difference matters because an empty folder and a
+> package with no assets look identical. A cache that does not hold the package returns the same nothing
+> as a package that ships nothing, and a run that read that nothing as an answer closed a gate on it.
+> The assets file has no such ambiguity: either it is there and names the asset the resolver chose, or it
+> is absent and you know you do not know.
 
 > **Not a rule here: a missing `Xamarin.AndroidX.AppCompat` reference.** It used to deduct as a net11
 > breakage and no source supports that — a library that uses AppCompat types needs the reference on any
