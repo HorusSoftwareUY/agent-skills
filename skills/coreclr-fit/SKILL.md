@@ -39,13 +39,10 @@ skeleton all live in the first two thirds. An agent handed 80% of this file read
 skill, scores the project correctly, and writes a report missing its last sections without ever noticing.
 That is not hypothetical — it has now happened twice, and in both runs every deduction was right.
 
-**What a partial copy costs you**, so you can weigh it yourself:
-
-- The projected gains come from a table of measured figures near the end. Without it you either omit
-  the section or invent numbers, and inventing them is the one failure this skill cannot absorb.
-- The report format and the sign-off are also at the end. A report missing them is **indistinguishable
-  from one where the analysis fell short**, and the person reading it has no way to tell which they are
-  holding. That is the real cost: not that it looks different, but that it looks like something else.
+**What that costs you**: the measured figures, the report format and the sign-off all live in
+the last third. Without them you either omit a section or invent numbers, and a report missing its
+format is **indistinguishable from one where the analysis fell short** — the reader cannot tell which
+of the two they are holding.
 
 **If you want the whole file**, it is the same URL, and a copy saved to disk is never summarised. This
 installs it, with `pdf.md` next to it (swap `.claude` for your agent's folder, `curl.exe` on Windows):
@@ -615,9 +612,9 @@ not a rule. **Pick the band from a count you can show, never a number that feels
 | Signal | Pts | How to read it |
 |---|---|---|
 | CPU-bound managed work on the critical path (parsing, transforming, sorting collections, formatting) · `banded` | 0 · 12 · 25 · 34 · 45 | **What counts, with what we measured for each:** LINQ over collections — `Select`, `Where`, `OrderBy`, `GroupBy` (`−44%` time, `1.8×`) · date parsing and formatting (`−53%`, `2.1×`) · string building and object-to-object mapping (no figure of their own; same shape). **Score from counted hits, not impression** — this is the heaviest row on the axis and the easiest to inflate. The step 2 patterns are what earn it, and a hit only counts when it sits on a path the user waits for (a view model building a list, a service shaping a response), not in startup config or tests. It is the widest row because this work is everywhere and runs on every screen, even though each case gains less than JSON. An app whose screens are layout and native handlers scores near 0 — the UI thread measured ≈ 1×. |
-| Serialization that can use STJ source-gen · `banded` | 0 · 2 · 12 · 25 | Full points when STJ + a context is already there. Half when it's STJ without a context — mechanical to add, and it lands in the measured configuration. Half too on Newtonsoft over own models, but for a different reason: that gain was **never measured**, and the points are for the trim-visible destination being reachable, not for a figure. Near 0 when there's barely any serialization. |
+| Serialization that can use STJ source-gen · `banded` | 0 · 2 · 12 · 25 | STJ without a context is mechanical to add and lands in the measured configuration. Newtonsoft over own models scores the same but for a different reason: that gain was **never measured**, and the points are for the trim-visible destination being reachable, not for a figure. |
 | Session length · `banded` | 4 · 10 · 18 | Long-lived sessions reach tier-1 and collect the steady-state gain; apps opened for seconds and killed live on the cold-start row of the gains table instead, and score low. |
-| Android reach (the MIBC startup profile) · `banded` | 0 · 2 · 6 · 12 | Score it by how much of the product is Android — all of it → 12, one of two platforms → ~6, a minor platform → ~2 — and ask, because this is a share of installs, not of TFMs. **Why it belongs on an upgrade axis:** the gain comes from a custom MIBC profile feeding `crossgen2`, which is a CoreCLR mechanism. The figures live in the MIBC rows of the gains table; quote them from there and never from here. Two shortcuts to avoid: the Mono baseline was **not** handicapped, it ran profiled AOT with the SDK's own default `aotprofile`, and Mono does have an equivalent mechanism (a custom `*.aotprofile`) that **we did not measure**, expected to gain less because its default profile is already well tuned and it has no tiered JIT to recover afterwards. So: *measured on CoreCLR, Mono counterpart unmeasured and expected smaller* — never *it only exists on CoreCLR*. |
+| Android reach (the MIBC startup profile) · `banded` | 0 · 2 · 6 · 12 | **Why it belongs on an upgrade axis:** the gain comes from a custom MIBC profile feeding `crossgen2`, which is a CoreCLR mechanism. The figures live in the MIBC rows of the gains table; quote them from there and never from here. Two shortcuts to avoid: the Mono baseline was **not** handicapped, it ran profiled AOT with the SDK's own default `aotprofile`, and Mono does have an equivalent mechanism (a custom `*.aotprofile`) that **we did not measure**, expected to gain less because its default profile is already well tuned and it has no tiered JIT to recover afterwards. So: *measured on CoreCLR, Mono counterpart unmeasured and expected smaller* — never *it only exists on CoreCLR*. |
 
 **The bands, and what selects each one.**
 
@@ -681,7 +678,6 @@ Bands: **LOW** 0–35 (it will not pay you) · **MEDIUM** 36–65 (some screens 
 >   verdict on the whole product.
 
 Score it honestly in both directions: a low Upside is a useful answer, not a failure of the analysis.
-"Ready, but it won't pay you" is exactly the sentence nobody else will write for them.
 
 **Never print either axis without its caption.** `HIGH` on its own says nothing about what improves;
 the right-hand caption (`up to 44% less time on list work`) is what makes it concrete and what
@@ -1095,10 +1091,6 @@ purpose: the coverage rule's denominator is the XAML that binds, not every `.xam
 The bottom lines matter more than they look. `6 of 42 candidates verified` states the coverage of the
 analysis instead of implying it was exhaustive. The footer also versions the skill, so a score can be
 traced to the rules that produced it.
-
-**Never print either axis without its caption.** `HIGH` on its own says nothing about what improves; the
-right-hand caption is what stops it being read as a blanket speed claim. Same for Readiness: the caption
-says what kind of work is left.
 
 **And say once what the two axes are.** Two lines under the card, in the skeleton above, because the card
 is the part that gets screenshotted and forwarded, and whoever opens it second has no idea that a project
