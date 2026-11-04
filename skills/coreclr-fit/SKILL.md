@@ -199,6 +199,17 @@ defaults to `android-arm;android-arm64;android-x86;android-x64` (64-bit-only def
 .NET 9). When they differ, say so in the report and don't score defaults that the project's own SDK
 would set differently — check `dotnet --list-sdks` and prefer running with the matching one.
 
+**And you can, without touching their repo.** `global.json` is resolved from the working directory, not
+from the project, so write one in a scratch directory outside the tree and evaluate from there:
+`cd <scratch> && dotnet msbuild <absolute path to the csproj> -getProperty:…`. Nothing is added to
+theirs, and **delete the scratch directory when the evaluation is done** — a run of this skill leaves
+their machine as it found it, not only their repo. Worth the second run whenever the majors differ,
+and **required when the Android or Apple properties come back empty** — a band carries its own
+workload pack and the previous one, no further back, so an SDK 11 preview cannot evaluate a net8 leg
+at all. Measured on a net8 app: empty under the preview,
+`RuntimeIdentifiers=android-arm;android-arm64;android-x86;android-x64` under 8.0.x. The 32-bit rule
+and its gate only fire on the second run.
+
 For every property that costs points, check whether it is **explicit** (set in the csproj or a
 `Directory.Build.props`) or just the **evaluated default**. `SuppressTrimAnalysisWarnings=true` and
 `AndroidEnableProfiledAot=true` are MAUI defaults nobody decided; a default is a note, an explicit
@@ -409,7 +420,7 @@ known cost, none of it is a research task)
 | TFM is `net9` | −7 | Distance to travel, not a defect: one version back. |
 | TFM is `net8` | −15 | Two versions, each with its own breaking changes and workload bumps. |
 | TFM is `net7` or older | −25 | Expect an intermediate hop; nobody goes straight to 11. |
-| Android `SupportedOSPlatformVersion` < 24 | −3 | Build fails otherwise; trivial change, needs sign-off on dropping Android 6. |
+| Android `SupportedOSPlatformVersion` < 24 | −3 | Build fails otherwise, and the code is known, so this one earns its `✖`: **XA4216** · *The deployment target '21' is not supported (the minimum is '24'). Please increase the $(SupportedOSPlatformVersion) property value in your project file.* Read from the Android workload pack the net11 manifest resolves to, where `AndroidMinimumSupportedApiLevel` is 24 for every ABI; the net10 pack says 21. Trivial change, needs sign-off on dropping Android 6. |
 | `RuntimeIdentifiers` lists `android-x86`/`android-arm` alongside arm64 | −7 | CoreCLR on Android is 64-bit only. Must drop them. |
 | `RunAOTCompilation=true` with `AndroidLinkMode=None` or `PublishTrimmed=false` in Release | −9 | Invalid by design (XA1030). Means Release was never validated on device. |
 | `PublishReadyToRun=true` not conditioned on the TFM, **and a second older TFM is present** | −2 | Fine on net11, breaks the older leg kept for comparison. Without that second leg nothing is broken and this does not fire — the `Second TFM` row of step 2 is what tells you. |
@@ -1134,7 +1145,7 @@ section names the absent axes that apply, with counts and without numbers.
 A table of one-liners is not a fix list. It is the summary of one, and it leaves the reader with nothing
 to do.
 
-1. **A severity mark**, in the canonical wording — `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is`. Never reword it: two reports have to be readable side by side.
+1. **A severity mark**, in the canonical wording — `✖ breaks the build` / `◐ blocks the gain` / `○ runs as-is`. Never reword it: two reports have to be readable side by side. **A `✖` is earned only by naming the compiler error; one you expect to break but cannot name is `◐`.**
 2. **The mechanism, in one or two sentences.** *Why* this costs them something, never "best practice". If you cannot say what goes wrong, the item does not belong on the list.
 3. **A snippet using their names** — their packages, their types, their file. A generic snippet makes the reader do the translation, which is the step where fix lists die.
 4. **A scope line counted from their repo** — *"28 files · every DTO on the API path"*. Never a duration.
