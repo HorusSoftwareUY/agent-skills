@@ -1,6 +1,6 @@
 ---
 name: coreclr-fit
-description: 'Score whether .NET 11 with the CoreCLR runtime (which replaces Mono entirely on Android, iOS, Mac Catalyst and tvOS — from preview 6 there is no Mono option left) is a fit for a .NET MAUI project, on two axes: a 0–100 readiness score for how much work the migration takes, and an upside band (LOW / MEDIUM / HIGH) for how much of the measured gain this particular app can actually capture — because an app can be ready to migrate and have nothing to gain. Produces a report with both scores, blockers, per-dimension breakdown, a prioritized fix list with ready-to-paste MSBuild/XAML/C# changes, and honestly-labeled projected gains. Use this whenever someone asks whether their MAUI app can migrate to .NET 11 or CoreCLR, what will break when they leave Mono, asks about UseMonoRuntime, ReadyToRun or trimming on Android, the Android 32-bit drop, AOT crashes after upgrading, or wants an audit, checklist, score or estimate before upgrading a MAUI app from .NET 8, 9 or 10. Also covers "upgrade to .NET 11", "should we upgrade", "what does the .NET 11 upgrade cost us". Also use it when someone simply says "migrate this MAUI app to .NET 11" or "is CoreCLR worth it for us" — the assessment is what answers that, and the migration steps fall out of it. The skill is read-only: it analyses the repo and writes one report file, and never edits the project.'
+description: 'Score whether .NET 11 with the CoreCLR runtime (which replaces Mono entirely on Android, iOS, Mac Catalyst and tvOS — from preview 6 there is no Mono option left) is a fit for a .NET MAUI project, on two axes: a 0–100 readiness score for how much work the migration takes, and an upside band (LOW / MEDIUM / HIGH) for how much of the measured gain this particular app can actually capture — because an app can be ready to migrate and have nothing to gain. Produces a report with both scores, blockers, per-dimension breakdown, a prioritized fix list with ready-to-paste MSBuild/XAML/C# changes, and honestly-labeled projected gains. Use this whenever someone asks whether their MAUI app can migrate to .NET 11 or CoreCLR, what will break when they leave Mono, asks about UseMonoRuntime, ReadyToRun or trimming on Android, the Android x86 drop, AOT crashes after upgrading, or wants an audit, checklist, score or estimate before upgrading a MAUI app from .NET 8, 9 or 10. Also covers "upgrade to .NET 11", "should we upgrade", "what does the .NET 11 upgrade cost us". Also use it when someone simply says "migrate this MAUI app to .NET 11" or "is CoreCLR worth it for us" — the assessment is what answers that, and the migration steps fall out of it. The skill is read-only: it analyses the repo and writes one report file, and never edits the project.'
 ---
 
 # CoreCLR fit for .NET MAUI
@@ -10,8 +10,8 @@ description: 'Score whether .NET 11 with the CoreCLR runtime (which replaces Mon
 
 From .NET 11, MAUI apps run on CoreCLR, and Mono is not demoted to an option — it is gone. That is not a
 version bump: Release builds compile differently (ReadyToRun instead of Mono AOT), two XAML forms the old
-toolchain accepted now fail to compile, 32-bit Android is gone, and trimming mistakes fail at runtime
-instead of never. It also brings real gains — on some workloads, and not on the UI thread.
+toolchain accepted now fail to compile, x86 Android is gone, and trimming mistakes fail at runtime
+instead of never. It also brings real gains — on managed work, opening a screen included; not on native layout itself.
 
 This skill turns a repo into a score, a fix list and a projection the user can defend. The score is the
 conversation starter; the fix list with `file:line` references is the deliverable. Everything here comes
@@ -39,6 +39,10 @@ skeleton all live in the first two thirds. An agent handed 80% of this file read
 skill, scores the project correctly, and writes a report missing its last sections without ever noticing.
 That is not hypothetical — it has now happened twice, and in both runs every deduction was right.
 
+**A second check, and a mechanical one:** this file is around 108,000 characters. A few thousand
+either way is a release, not a truncation; a missing third is the answer. The number is approximate
+on purpose, so that keeping it honest never depends on anyone remembering to update it.
+
 **What that costs you**: the measured figures, the report format and the sign-off all live in
 the last third. Without them you either omit a section or invent numbers, and a report missing its
 format is **indistinguishable from one where the analysis fell short** — the reader cannot tell which
@@ -53,6 +57,12 @@ curl -fsSL --create-dirs --output-dir .claude/skills/coreclr-fit -O "https://ski
 
 Asking the same web tool again returns the same summary, and sending a subagent returns that agent's
 reading of the page, which is a summary wearing another name. Both have been tried.
+
+**Pasting the file into a chat box is the same trap wearing a third name**, and it is the one that feels
+safest: the file is on disk, the person opened it themselves. It still arrives short, because an input of
+this size gets capped, chunked or trimmed to fit, and what goes first is the end. One real report came
+back from a paste with an ASCII score card, an invented section heading and no sign-off, while every
+deduction in it was correct and sourced. **Read it from a path, never from a paste.**
 
 **Installing it is the version with standing.** At `.claude/skills/coreclr-fit/` — or `.agents`,
 `.github`, `.cursor` — it is a skill the user put there, not a page you found, and this whole question
@@ -207,7 +217,7 @@ their machine as it found it, not only their repo. Worth the second run whenever
 and **required when the Android or Apple properties come back empty** — a band carries its own
 workload pack and the previous one, no further back, so an SDK 11 preview cannot evaluate a net8 leg
 at all. Measured on a net8 app: empty under the preview,
-`RuntimeIdentifiers=android-arm;android-arm64;android-x86;android-x64` under 8.0.x. The 32-bit rule
+`RuntimeIdentifiers=android-arm;android-arm64;android-x86;android-x64` under 8.0.x. The x86 rule
 and its gate only fire on the second run.
 
 For every property that costs points, check whether it is **explicit** (set in the csproj or a
@@ -284,7 +294,7 @@ can A/B today, and neither is worth points either way.
 ### 3 · Ask what the search can't know · this is a stop
 
 **Send the questions and end your turn.** Do not score, do not write the report, and do not "assume for
-now and adjust later". A report built on guesses gets read as a verdict, and the 32-bit question alone
+now and adjust later". A report built on guesses gets read as a verdict, and the x86 question alone
 can turn a clean upgrade into a blocked one. Scoring starts when they answer, or when they tell you to go
 ahead without answers.
 
@@ -294,7 +304,7 @@ has quietly swapped the person's answers for your guesses.
 
 **Ask only what the search left open**, in one message, one line per question, not an interview. Drop a
 question the repo already answered and say so in one line: `minSdk` already at 24 or higher settles G2;
-no 32-bit RID in the evaluated build *and* every native dependency verified on arm64 settles G1; an
+no `android-x86` RID in the evaluated build *and* every native dependency verified on arm64 settles G1; an
 evaluated `AndroidLinkMode` settles the first half of the trimming question, not the second. When the
 person never wrote a word of their own (see *Language*), add one line asking which language they want the
 report in.
@@ -313,7 +323,7 @@ tool, send a numbered list with the options written into each line.
 
 | Ask | Options | What it decides |
 |---|---|---|
-| Must you ship 32-bit Android (armeabi-v7a / x86)? Does any native dependency lack arm64? | We need 32-bit · We don't | **Gate G1** |
+| Must you ship x86 Android? Does any native dependency lack arm64? | We need x86 · We don't | **Gate G1** |
 | Can Android `minSdk` go to 24? | It can go to 24 · It has to stay | **Gate G2**, or a −3 in D1 if it can |
 | Are you on `Full` trimming (`AndroidLinkMode=Full` / `TrimMode=full`), and has a Release build been validated on a device? | Full, validated on a device · Full, never validated · Not on Full | The **tone** of the `Full` trimming note, not whether it appears |
 | What share of your installs is Android vs iOS? | Mostly Android · About half · Mostly iOS · Don't know | The **Android reach** row of Upside (0–12), which is a share of users, not of TFMs — the csproj says both platforms exist, never which one the product lives on |
@@ -329,7 +339,7 @@ it — use these defaults. Not because the run is long, not because the question
 
 | Question | Default when nobody can answer |
 |---|---|
-| 32-bit Android | Assume **no**. Assuming yes would return "Blocked" on every unattended run, which is the one wrong answer that costs them the whole report |
+| x86 Android | Assume **no**. Assuming yes would return "Blocked" on every unattended run, which is the one wrong answer that costs them the whole report |
 | `minSdk` 24 | Assume **it can**, and say the deduction is provisional |
 | `Full` trimming | Assume `SdkOnly` and never validated, which is both the common case and the milder claim |
 | Android vs iOS share | Split it evenly across the platform TFMs and say you did |
@@ -340,7 +350,7 @@ it — use these defaults. Not because the run is long, not because the question
 When you fall back to them, mark them as what they are. In the report, under
 *What was analyzed*, write the assumptions under a heading that says they were **taken automatically**,
 and close with: *"Nobody answered these, so they were assumed. If any of them is wrong the verdict moves
-— the 32-bit question alone can turn this into a blocked upgrade. Worth one re-run with someone
+— the x86 question alone can turn this into a blocked upgrade. Worth one re-run with someone
 available to answer."* An assumption the reader does not know was automatic is worse than no answer at
 all.
 
@@ -367,7 +377,7 @@ lighter one instead of both hitting the floor. The worst case allowed by each ta
 20 and −25 of 30, and that margin is load-bearing — **re-check it whenever a rule value changes**.
 
 **That −49 assumes an Android TFM exists, and on a project without one it is wrong.** Four D1 rules are
-Android-only — `minSdk`, the 32-bit RIDs, the invalid AOT combination and Mono AOT tuning, 21 points
+Android-only — `minSdk`, the x86 RID, the invalid AOT combination and Mono AOT tuning, 21 points
 between them — and both gates are Android-only too. An iOS-only project therefore cannot score below 24
 on D1 and can never come back "Blocked", not because it is in better shape but because most of the table
 cannot reach it.
@@ -377,7 +387,7 @@ project's, and a score computed on a different denominator in each report destro
 it instead. One Android TFM is enough for the rules to be live, so this applies only to a project with no
 Android leg at all, and then the dimension's section says so in full:
 
-> *No Android TFM in this project, so 21 points of this dimension could not fire: `minSdk`, 32-bit RIDs,
+> *No Android TFM in this project, so 21 points of this dimension could not fire: `minSdk`, x86 RIDs,
 > the AOT combination and Mono AOT tuning are Android rules. Read 43/50 as "nothing wrong in what
 > applies", not as "better than an Android project that scored 38".*
 
@@ -394,9 +404,9 @@ rather than letting the reader reconcile it alone.
 
 **Gates — cap the total at 30, verdict "Blocked"**
 
-- **G1 · 32-bit Android is required** (business rule, or a native dependency with no `arm64-v8a`).
-  CoreCLR on Android is 64-bit only; there is no configuration around it. Listing 32-bit RIDs is not
-  the gate — needing them is.
+- **G1 · x86 Android is required** (business rule, or a native dependency with no `arm64-v8a`).
+  CoreCLR has no x86 pack; there is no configuration around it. arm32 is supported since RC 2 (not in
+  preview 5). Listing x86 is not the gate — needing it is.
 - **G2 · Android `minSdk` < 24 and it cannot be raised.** .NET 11 requires API 24. If it *can* be
   raised it is not a gate, just the −3 in D1.
 
@@ -421,7 +431,7 @@ known cost, none of it is a research task)
 | TFM is `net8` | −15 | Two versions, each with its own breaking changes and workload bumps. |
 | TFM is `net7` or older | −25 | Expect an intermediate hop; nobody goes straight to 11. |
 | Android `SupportedOSPlatformVersion` < 24 | −3 | Build fails otherwise, and the code is known, so this one earns its `✖`: **XA4216** · *The deployment target '21' is not supported (the minimum is '24'). Please increase the $(SupportedOSPlatformVersion) property value in your project file.* Read from the Android workload pack the net11 manifest resolves to, where `AndroidMinimumSupportedApiLevel` is 24 for every ABI; the net10 pack says 21. Trivial change, needs sign-off on dropping Android 6. |
-| `RuntimeIdentifiers` lists `android-x86`/`android-arm` alongside arm64 | −7 | CoreCLR on Android is 64-bit only. Must drop them. |
+| `RuntimeIdentifiers` lists `android-x86` | −7 | No CoreCLR pack for x86, so it earns its `✖`: **NETSDK1181** · *Pack 'Microsoft.Android.Runtime.CoreCLR.…android-x86' was not present in workload manifests*. Drop it. `android-arm` costs nothing: CoreCLR ships arm32 since RC 2 (absent in preview 5), built and ran on device — re-check at GA. |
 | `RunAOTCompilation=true` with `AndroidLinkMode=None` or `PublishTrimmed=false` in Release | −9 | Invalid by design (XA1030). Means Release was never validated on device. |
 | `PublishReadyToRun=true` not conditioned on the TFM, **and a second older TFM is present** | −2 | Fine on net11, breaks the older leg kept for comparison. Without that second leg nothing is broken and this does not fire — the `Second TFM` row of step 2 is what tells you. |
 | Mono AOT tuning set **explicitly** (`AndroidAotProfiles`, `AotAssemblies`) | −2 | Does nothing on CoreCLR; the equivalent is R2R + a MIBC profile. An evaluated default is not this. |
@@ -434,7 +444,7 @@ nothing compiles until it is fixed)
 | Rule | Pts | Why |
 |---|---|---|
 | `<Binding RelativeSource="…">` element form | −7 | MAUIX2002: not a bindable property in element syntax. Use `{Binding …, Source={RelativeSource …}}`. Reproduced on preview 5. |
-| `x:Code` block | −6 | MAUIG1001 from inside the XAML generator, plus a cascading CS8795. Fails even with `EnablePreviewFeatures=true`. **Preview-5 state and the likeliest of these to disappear** — re-check at GA. |
+| `x:Code` block | −6 | MAUIG1001 from inside the XAML generator, plus a cascading CS8795. Fails even with `EnablePreviewFeatures=true`. **Preview-5 state and the likeliest of these to disappear** — still fails on RC 2; re-check at GA. |
 | `x:DataType` coverage · `banded` | 0 all views · −3 most · −4 fewer than half · −6 none | Not a break. Compiled bindings turn a type mismatch into a build error instead of a silent default — and, as it happens, they are also what keeps reflection-serialized properties alive under aggressive trimming. |
 
 > **The denominator is XAML that binds, not every `.xaml` in the repo.** `App.xaml`, `AppShell.xaml`,
@@ -455,72 +465,64 @@ everything else here the fix is often outside your control: you escalate to a ma
 |---|---|---|
 | Packages left behind · `banded` · **test by assets, not by name** | 0 none · −6 one · −10 two or three · −15 four or more | Old TFMs resolving via fallback; may lack arm64/net11 assets or trim-clean code. Each is a "find the replacement" task, and several have no maintainer. **How to decide which packages count is below the table** — the name does not tell you. |
 | Java/Kotlin bindings or embedded native libs of your own **with no `arm64-v8a` slice, or none you could verify** | −4 | They must be rebuilt for arm64, and it fails at runtime rather than at compile time. Open the archive before scoring — `unzip -l lib.aar \| grep jni/` — because one that already ships arm64 costs nothing. If you cannot inspect it, deduct and say the check is pending. |
-| AndroidX packages pinned to explicit versions instead of resolving through MAUI's graph | −2 | `NU1608` at restore when the MAUI bump moves the pinned range: MAUI pins the AndroidX line, an explicit pin that sits outside it fails the restore, and realigning them is part of the upgrade. `Lifecycle.LiveData.*` is the one that shows up most. Not a runtime failure. |
+| AndroidX packages pinned to explicit versions instead of resolving through MAUI's graph | −2 | `NU1608` at restore (or `NU1605`, a downgrade error, when the pin sits below MAUI's) when the MAUI bump moves the pinned range: MAUI pins the AndroidX line, an explicit pin that sits outside it fails the restore, and realigning them is part of the upgrade. `Lifecycle.LiveData.*` is the one that shows up most. Not a runtime failure. |
+| `Microsoft.Maui.Controls.Compatibility` referenced | −4 | Not published past preview 5, so restore earns its `✖`: **NU1102** · *Unable to find package Microsoft.Maui.Controls.Compatibility*. Drop it; code on its namespaces (old renderers, `UseMauiCompatibility`) moves to handlers first. |
 | Firebase / Crashlytics / AppCenter | −2 | Binding-heavy, historically the slowest to publish new-TFM assets. |
 | MAUI versions pinned per csproj instead of one `MauiVersion` | −2 | The workload and the pin drift apart; the bump becomes N edits instead of one. |
 
 > **Which packages are "left behind" — open the assets, do not read the name.** The name is a hint for
-> where to look first and nothing more, and it is wrong in both directions. `Microcharts.Maui` is named
-> for the current framework and ships `net6.0-*` only. `Xamarin.AndroidX.Core` carries the old brand and
-> ships `net10.0-android36.0`. Scoring either one from its name is a mistake the reader can see.
+> where to look and nothing more, and it is wrong in both directions: `Microcharts.Maui` is named for the
+> current framework and ships `net6.0-*` only; `Xamarin.AndroidX.Core` carries the old brand and ships
+> `net10.0-android36.0`.
 >
 > **Read what the resolver chose, in `obj/project.assets.json`.** Every restore writes it, and it records
-> which asset of each package the build picked per TFM, which is exactly what this rule asks: landing on
-> `net8.0-android34.0` for a `net10.0-android` target proves `net8.0` is the newest it ships.
->
-> Prefer it over the package folder: the global cache is pruned, moved by `NUGET_PACKAGES`, and absent on
-> a fresh clone or a CI runner. A real run found seven SkiaSharp packages in the graph and nothing in the
-> cache, which reading folders cannot tell apart from a package that ships nothing. **Say which source
-> you used**, because the two answer slightly different questions.
->
-> Falling back to the cache is a read-only look and needs no network:
+> which asset the build picked per TFM: landing on `net8.0-android34.0` for a `net10.0-android` target
+> proves `net8.0` is the newest it ships. Prefer it over the package folder, which is pruned, moved by
+> `NUGET_PACKAGES` and absent on a fresh clone or a CI runner — one real run found seven SkiaSharp
+> packages in the graph and nothing in the cache, which reading folders cannot tell apart from a package
+> that ships nothing. **Say which source you used.** Falling back to the cache is read-only and needs no
+> network; the folder names are the frameworks it publishes for:
 >
 > ```bash
 > ls ~/.nuget/packages/<package.id>/<version>/lib/
 > ```
 >
-> The folder names are the frameworks it publishes for. **A package counts when either of these is
-> true:**
+> **A package counts when either of these is true:**
 >
-> - It ships `monoandroid*`, `xamarin.ios*` or `xamarin.mac*` assets. Genuinely Xamarin-era: those
->   resolve onto a .NET TFM by fallback and were built before arm64-only and before trimming mattered.
-> - Its newest platform asset (`net*-android`, `net*-ios`) is **three or more majors behind** the TFM they
->   are moving to — `net8.0-android` or older against a `net11.0-android` target. Three release cycles
->   untouched, whatever it is called. **A package one or two majors back is current**: shipping
->   `net10.0-android` the month .NET 11 lands is normal maintenance, not neglect, and deducting for it
+> - It ships `monoandroid*`, `xamarin.ios*` or `xamarin.mac*` assets — Xamarin-era, resolving onto a .NET
+>   TFM by fallback, built before arm64-only and before trimming mattered.
+> - Its newest platform asset (`net*-android`, `net*-ios`) is **three or more majors behind** the target
+>   TFM: `net8.0-android` or older against `net11.0-android`. **One or two majors back is current** —
+>   shipping `net10.0-android` the month .NET 11 lands is maintenance, not neglect, and deducting for it
 >   would punish almost every healthy dependency.
 >
-> **`netstandard2.0` or `netstandard2.1` alone does not count.** That is a portable library by design, it
-> resolves cleanly on every modern TFM, and deducting for it would hit half the ecosystem.
->
-> **Do not count what another rule already counts.** Firebase, Crashlytics and AppCenter have their own
-> −2 row, and explicitly pinned AndroidX packages have theirs. A package caught by one of those is not
-> also counted here — *do not deduct twice for one cause*, which is the same rule that keeps reflection
-> out of this axis.
+> **`netstandard2.0` or `netstandard2.1` alone does not count**: portable by design, it resolves cleanly
+> everywhere, and deducting for it would hit half the ecosystem. **And do not count what another rule
+> already counts** — Firebase, Crashlytics, AppCenter and explicitly pinned AndroidX have their own rows.
+> *Do not deduct twice for one cause*, which is the same rule that keeps reflection out of this axis.
 >
 > **A package with no replacement still counts, and the report says so.** The deduction is for *this is
-> not keeping up and you do not control it*, which is true whether or not something exists to swap in.
-> What changes is the fix, not the risk — so put each counted package in one of three situations, by
-> name, in the fix list:
+> not keeping up and you do not control it*, true whether or not something exists to swap in; what
+> changes is the fix, not the risk. Put each counted package in one of three situations, by name, in the
+> fix list:
 >
-> - **A current replacement exists** → swapping it is ordinary work, and the scope line says how much.
-> - **No replacement, maintainer still active** → do not plan a rewrite. Test it against net11 first and
->   open an issue early; most of these publish within a release.
+> - **A current replacement exists** → ordinary work, and the scope line says how much.
+> - **No replacement, maintainer still active** → do not plan a rewrite. Test it against net11 and open
+>   an issue early; most of these publish within a release.
 > - **No replacement, nothing published in years** → the one that can actually block. Say it plainly and
->   early, because the answer may be writing the binding yourself or dropping the feature, and that is a
->   product decision with a lead time.
+>   early: the answer may be writing the binding yourself or dropping the feature, and that is a product
+>   decision with a lead time.
 >
-> **Never write "replace this" for a package in the second or third situation.** It is advice the team
-> cannot act on, and it is how a fix list loses its reader.
+> **Never write "replace this" for the second or third situation** — advice the team cannot act on is how
+> a fix list loses its reader.
 >
 > **If you cannot look** — meaning **both** sources failed you: no `obj/project.assets.json` because
-> nothing has been restored, and no `lib/` either because the package is not in the cache or is a native
-> or build-only package — say the check is pending and name the package, do not deduct. An unverified
-> deduction is exactly what this rule was rewritten to stop. List those packages under *Reported, never
-> scored* so the reader knows the first thing the net11 restore will tell them.
->
-> **One source failing is not that case**, which is the whole reason the assets file goes first: it is
-> either there and names the asset, or absent and you know you do not know.
+> nothing has been restored, and no `lib/` either because the package is not cached or is native or
+> build-only — say the check is pending, name the package, do not deduct, and list it under *Reported,
+> never scored* so the reader knows the first thing the net11 restore will tell them. An unverified
+> deduction is exactly what this rule was rewritten to stop. **One source failing is not that case**,
+> which is the whole reason the assets file goes first: it is either there and names the asset, or absent
+> and you know you do not know.
 
 > **Not a rule here: a missing `Xamarin.AndroidX.AppCompat` reference.** It used to deduct as a net11
 > breakage and no source supports that — a library that uses AppCompat types needs the reference on any
@@ -535,7 +537,7 @@ against the three tables above, and the column of `file:line` is checkable again
 D1 · Build & TFM                                              50
   TFM is net9                              −7   App.csproj:4
   Android SupportedOSPlatformVersion 21     −3   App.csproj:25
-  RuntimeIdentifiers lists android-arm      −7   App.csproj:137
+  RuntimeIdentifiers lists android-x86      −7   App.csproj:137
   no global.json                            −1   —
                                           ────
                                            −18   →  32/50
@@ -622,7 +624,7 @@ not a rule. **Pick the band from a count you can show, never a number that feels
 
 | Signal | Pts | How to read it |
 |---|---|---|
-| CPU-bound managed work on the critical path (parsing, transforming, sorting collections, formatting) · `banded` | 0 · 12 · 25 · 34 · 45 | **What counts, with what we measured for each:** LINQ over collections — `Select`, `Where`, `OrderBy`, `GroupBy` (`−44%` time, `1.8×`) · date parsing and formatting (`−53%`, `2.1×`) · string building and object-to-object mapping (no figure of their own; same shape). **Score from counted hits, not impression** — this is the heaviest row on the axis and the easiest to inflate. The step 2 patterns are what earn it, and a hit only counts when it sits on a path the user waits for (a view model building a list, a service shaping a response), not in startup config or tests. It is the widest row because this work is everywhere and runs on every screen, even though each case gains less than JSON. An app whose screens are layout and native handlers scores near 0 — the UI thread measured ≈ 1×. |
+| CPU-bound managed work on the critical path (parsing, transforming, sorting collections, formatting) · `banded` | 0 · 12 · 25 · 34 · 45 | **What counts, with what we measured for each:** LINQ over collections — `Select`, `Where`, `OrderBy`, `GroupBy` (`−44%` time, `1.8×`) · date parsing and formatting (`−53%`, `2.1×`) · string building and object-to-object mapping (no figure of their own; same shape). **Score from counted hits, not impression** — this is the heaviest row on the axis and the easiest to inflate. The step 2 patterns are what earn it, and a hit only counts when it sits on a path the user waits for (a view model building a list, a service shaping a response), not in startup config or tests. It is the widest row because this work is everywhere and runs on every screen, even though each case gains less than JSON. An app whose screens are layout and handlers scores near 0 **on this row** — it has no list work to speed up. That is not the same as no gain: opening a screen is **1.64×** on the runtime alone, handlers included, and that lands in the gains table rather than here. |
 | Serialization that can use STJ source-gen · `banded` | 0 · 2 · 12 · 25 | STJ without a context is mechanical to add and lands in the measured configuration. Newtonsoft over own models scores the same but for a different reason: that gain was **never measured**, and the points are for the trim-visible destination being reachable, not for a figure. |
 | Session length · `banded` | 4 · 10 · 18 | Long-lived sessions reach tier-1 and collect the steady-state gain; apps opened for seconds and killed live on the cold-start row of the gains table instead, and score low. |
 | Android reach (the MIBC startup profile) · `banded` | 0 · 2 · 6 · 12 | **Why it belongs on an upgrade axis:** the gain comes from a custom MIBC profile feeding `crossgen2`, which is a CoreCLR mechanism. The figures live in the MIBC rows of the gains table; quote them from there and never from here. Two shortcuts to avoid: the Mono baseline was **not** handicapped, it ran profiled AOT with the SDK's own default `aotprofile`, and Mono does have an equivalent mechanism (a custom `*.aotprofile`) that **we did not measure**, expected to gain less because its default profile is already well tuned and it has no tiered JIT to recover afterwards. So: *measured on CoreCLR, Mono counterpart unmeasured and expected smaller* — never *it only exists on CoreCLR*. |
@@ -636,7 +638,7 @@ counting it.
 
 | Verified hits on waiting paths | Pts |
 |---|---|
-| none — the screens are layout and native handlers | 0 |
+| none — nothing CPU-bound on a waiting path | 0 |
 | 1 to 5 | 4 |
 | 6 to 25 | 12 |
 | 26 to 100 | 25 |
@@ -848,12 +850,16 @@ frame. Logging: `#if DEBUG` around `options.EnableDebug()` and friends.
 
 ## Things the reference upgrade hit that are easy to miss
 
-The first three are troubleshooting knowledge — use them when the symptom comes up, don't pad the report
-with them. The fourth belongs in **Preview notes** on every report.
+All but the last are troubleshooting knowledge — use them when the symptom comes up, don't pad the report
+with them. The last belongs in **Preview notes** on every report.
 
 - "Random crashes on Release after upgrading" → check `RunAOTCompilation` + `AndroidLinkMode=None` first.
 - A XAML build error names a file and an error code, never a cause. `MAUIG1001` in particular comes from inside the generator and says nothing useful — search the code, not the message.
 - `pidof` doesn't prove which package is on screen when two variants are installed; `dumpsys window | grep mCurrentFocus` does. Worth passing on with the A/B snippet, since that is where two variants exist.
+- `MAUIR0001`/`MAUIR0004` with a SkiaSharp `MissingMethodException` on an SVG → the RC 2 Resizetizer fails on SVGs with `<text>` or `<filter>`; rasterize those to PNG, re-check at GA.
+- `NETSDK1147` asking for iOS workloads while building Android → restore evaluates every TFM; pass `-p:TargetFrameworks=net11.0-android`.
+- Release opens to a blank screen after the SDK bump while Debug works → `Resources$NotFoundException` with a stale resource ID: `obj`/`bin` of Release still hold the old SDK's build. Delete them and rebuild.
+- A global handler that sets `Handled = true` (common around Crashlytics) swallows startup exceptions: the app sits blank with no trace in the log. Log the exception before swallowing it.
 - Numbers above are from a **preview** SDK; the SdkOnly-on-Mono regression, XA1030 not firing and the MIBC tooling workaround may all change by GA. Tell the user to re-check anything preview-specific they depend on.
 
 ## When the user only wants the upgrade steps
@@ -1009,7 +1015,7 @@ in the file, after everything else, inside a fenced block, preceded by a `---` r
 do not re-space it, do not resize the mark, and never move it into the score card — the card is the part
 people screenshot and it stays about their project, not about who wrote the tool. This is the only
 decorative element in the report, and the contact line is an offer, not a call to action: in a document
-that has just said their UI thread will not get faster and their APK will grow, a line that does not push
+that has just said their APK will grow and named what will not get faster, a line that does not push
 is the more credible one.
 
 
@@ -1114,7 +1120,7 @@ number — it turns the report into a plan with a finish line:
 
 ```
   58 → 71  (+13)   since 2026-06-04       58 ▁▃▅ 71
-  ▲ TFM moved up, 32-bit RIDs dropped       ▼ 3 Xamarin-era packages left
+  ▲ TFM moved up, x86 RID dropped           ▼ 3 Xamarin-era packages left
 ```
 
 ##### What each slot must contain
@@ -1374,8 +1380,8 @@ both forms are in the table below, already derived from the measurement.
 **Quote cold start as a percentage, never in milliseconds.** The absolute on the reference app says far
 more about how that app was built — its home inflated 24 eager cards with real controls, more than half
 of the start — than about either runtime, and it transfers to nobody else's project. The delta does.
-This applies to the cold-start rows only: the workload rows keep their figures, because *2 → 1 ms on the
-UI thread* is the finding.
+This applies to the cold-start rows only: the workload rows keep their figures, because *2 → 1 ms on
+layout and measure* is the finding.
 
 **Four groups, and the order answers the reader's questions in the order they ask them:** what arrives
 for free, where it does not, what costs me work, and what I already have without this upgrade. Drop any
@@ -1409,7 +1415,8 @@ publishes, and it is what makes the other half believable.
 | Source | Measured | Applies when | Confidence |
 |---|---|---|---|
 | Runtime — **first load, small phases** | dates 25 → **61 ms** · bind 8 → **14 ms** | **CoreCLR loses here, and the report should say so.** On the very first load it is still running unoptimised code and paying JIT warm-up; the big phases carry enough work to win anyway, the small ones do not. An app whose screens do little work and open once may gain nothing, or lose a little. | measured |
-| Runtime — UI-thread work | 2 → 1 ms, **≈ 1×** | Layout, measure, handlers: no gain to promise. | measured |
+| Runtime — **layout and measure** | 2 → 1 ms, **≈ 1×** | Measured on a small tree in isolation. Native layout does not get faster, and the report should say so. | measured |
+| Runtime — **opening a screen** | **1.64×** · **−39%** of the time | Touch to first frame on a real page, cold. **Both halves gain:** building the XAML **1.33–1.71×**, showing it — handlers plus native layout — **1.55–1.73×**, because MAUI's handlers are managed code too. Inflating the XAML is only ~30% of it. n=5, provisional. | measured |
 | Runtime — raw cold start | **−4%** | Small, and at the noise floor on any single run — but CoreCLR won every run across two phones, so the direction is solid even though the size is not worth promising. CoreCLR alone does not meaningfully start faster. | measured |
 | Runtime — GC | spikes proportionally larger (3.6× median vs 1.6×), smaller in absolute terms | Report medians and spike counts separately. | measured |
 | Runtime — APK size | ~29 → ~30 MB arm64 | Slight regression; Microsoft reports larger ones on big apps. | measured |
